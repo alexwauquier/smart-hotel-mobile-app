@@ -18,15 +18,6 @@ class Username
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $password = null;
-
-    #[ORM\Column]
-    private ?\DateTimeInterface $start_date = null;
-
-    #[ORM\Column]
-    private ?\DateTimeInterface $end_date = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -43,22 +34,4 @@ class Username
 
         return $this;
     }
-
-    public function setPassword(string $password): static
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    public function start_date(): ?\DateTimeInterface
-    {
-        return $this->start_date;
-    }
-
-    public function end_date(): ?\DateTimeInterface
-    {
-        return $this->end_date;
-    }
-
 }

@@ -23,7 +23,7 @@ const LoginForm = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.1.16:8000/api/users/login', {
+      const response = await fetch('http://172.20.10.2:8000/api/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',  // Assurez-vous d'indiquer le type JSON ici
@@ -68,7 +68,22 @@ const LoginForm = () => {
         />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          
+          <Svg height="100%" width="100%" viewBox="0 0 200 100">
+            <Defs>
+              <LinearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <Stop offset="0%" stopColor="#30A0BD" />
+                <Stop offset="100%" stopColor="#2F5B77" />
+              </LinearGradient>
+            </Defs>
+            <Rect
+              x="0"
+              y="0"
+              width="200"
+              height="100"
+              fill="url(#gradient1)"
+              rx="15"
+            />
+          </Svg>
           <Text style={styles.text}>LOGIN</Text>
         </TouchableOpacity>
       </View>
@@ -78,19 +93,40 @@ const LoginForm = () => {
 
 const styles = StyleSheet.create({
   container: {
-    
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   title: {
-    
+    fontSize: 15,
+    marginBottom: 5,
+    fontFamily: 'Roboto-Condensed-SemiBold', 
+    alignSelf: 'flex-start',
+    color: '#4B4B4B',
   },
   input: {
-    
+    width: 300,
+    height: 40,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2F5B77',
+    marginBottom: 45,
+    fontFamily: 'Roboto-Regular',
   },
   button: {
-    
+    width: 180,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    marginTop: 100,
   },
   text: {
-    
+    position: 'absolute',
+    fontSize: 32,
+    color: '#fff',
+    fontWeight: 'bold',
+    fontFamily: 'Averia-Serif-Libre-Regular',
   },
 });
 

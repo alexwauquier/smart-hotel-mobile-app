@@ -1,4 +1,5 @@
-login:
-    path: /api/users/login
-    controller: App\Controller\AuthController::login
-    methods: ['POST']
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
