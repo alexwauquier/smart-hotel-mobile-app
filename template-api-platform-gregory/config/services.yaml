@@ -1,0 +1,21 @@
+services:
+    # Ajout explicite du service AuthController
+    App\Controller\AuthController:
+        public: true  # Assurez-vous que le contrôleur est public
+        autowire: true  # Autowiring pour injecter les dépendances automatiquement
+        autoconfigure: true  # Assurez-vous que le contrôleur est configuré
+        arguments:
+            $passwordHasher: '@security.password_hasher'  # Injection du service UserPasswordHasherInterface
+
+    # Autres services
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Controller/AuthController.php'
