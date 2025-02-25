@@ -5,8 +5,8 @@ import * as Font from 'expo-font';
 
 const LoginForm = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [lastname, setLastname] = useState('');  // Modifié de 'username' à 'lastname'
+  const [roomNumber, setRoomNumber] = useState('');  // Modifié de 'password' à 'roomNumber'
 
   useEffect(() => {
     Font.loadAsync({
@@ -23,14 +23,14 @@ const LoginForm = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://172.20.10.2:8000/api/users/login', {
+      const response = await fetch('http://192.168.1.16:8000/api/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',  // Assurez-vous d'indiquer le type JSON ici
+          'Content-Type': 'application/ld+json',  // Assurez-vous d'indiquer le type JSON ici
         },
         body: JSON.stringify({
-          username: username,  // Les données de l'input pour le nom d'utilisateur
-          password: password,  // Les données de l'input pour le mot de passe
+          lastname: lastname,  // Utilisation de 'lastname' au lieu de 'username'
+          roomNumber: roomNumber,  // Utilisation de 'roomNumber' au lieu de 'password'
         }),
       });
 
@@ -50,21 +50,21 @@ const LoginForm = () => {
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
-        <Text style={styles.title}>Username</Text>
+        <Text style={styles.title}>Lastname</Text>
         <TextInput
           style={styles.input}
-          placeholder="Entrez votre username"
-          value={username}
-          onChangeText={setUsername}
+          placeholder="Enter your lastname"
+          value={lastname}
+          onChangeText={setLastname}
         />
 
-        <Text style={styles.title}>Password</Text>
+        <Text style={styles.title}>Room number</Text>
         <TextInput
           style={styles.input}
-          placeholder="Entrez votre mot de passe"
+          placeholder="Enter your room numer"
           secureTextEntry
-          value={password}
-          onChangeText={setPassword}
+          value={roomNumber}
+          onChangeText={setRoomNumber}
         />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
