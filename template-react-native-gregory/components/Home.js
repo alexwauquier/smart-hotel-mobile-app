@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'reac
 import * as Font from 'expo-font'; // Importation de expo-font pour charger les polices
 import HomeHeader from './HomeHeader';
 import Searchbar from './Searchbar';
+import DrinkButtons from './DrinkButtons';
 
 const Home = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -27,6 +28,7 @@ const Home = () => {
       <HomeHeader />
       {/* Le texte "Bonjour" est en dessous du header */}
       <Searchbar></Searchbar>
+      <DrinkButtons></DrinkButtons>
       <Text style={styles.text}>Bonjour</Text>
     </View>
     </TouchableWithoutFeedback>
