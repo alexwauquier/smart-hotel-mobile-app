@@ -1,13 +1,17 @@
 <?php
 
+// src/Entity/User.php
+
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ApiResource]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_LASTNAME', fields: ['lastname'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -23,7 +27,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $lastname = null;
 
     #[ORM\Column(length: 10)]
-    private ?string $roomNumber = null; // Utilisé comme mot de passe
+    private ?string $roomNumber = null; // Utilisé comme "mot de passe"
 
     #[ORM\Column]
     private array $roles = [];
@@ -84,7 +88,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Retourne le "mot de passe" (numéro de chambre).
+     * Retourne le "mot de passe" sans cryptage.
      */
     public function getPassword(): string
     {
@@ -93,6 +97,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setPassword(string $password): static
     {
+        // Aucune nécessité de crypter ici
         $this->roomNumber = $password;
 
         return $this;
@@ -142,3 +147,5 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 }
+
+?>
