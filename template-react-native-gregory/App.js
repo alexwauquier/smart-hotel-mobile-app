@@ -5,13 +5,13 @@ import HeaderLogin from './components/HeaderLogin';
 import AppHeader from './components/AppHeader';
 import Home from './components/Home';
 import AppNavbar from './components/AppNavbar';
+import Alcohol from './components/Alcohol';
+import Soft from './components/Soft';
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <AppHeader></AppHeader>
-      <Home></Home>
-      <AppNavbar></AppNavbar>
+      <LoginForm></LoginForm>
     </View>
   );
 }

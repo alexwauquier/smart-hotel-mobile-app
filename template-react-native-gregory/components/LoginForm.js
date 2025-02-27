@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import * as Font from 'expo-font'; 
+import * as Crypto from 'expo-crypto';  // ✅ Importation de expo-crypto
 
 const LoginForm = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [lastname, setLastname] = useState('');  // Modifié de 'username' à 'lastname'
-  const [roomNumber, setRoomNumber] = useState('');  // Modifié de 'password' à 'roomNumber'
+  const [lastname, setLastname] = useState('');
+  const [roomNumber, setRoomNumber] = useState('');
 
   useEffect(() => {
     Font.loadAsync({
@@ -18,25 +19,31 @@ const LoginForm = () => {
   }, []);
 
   if (!fontsLoaded) {
-    return null; // Ne rien afficher tant que la police n'est pas chargée
+    return null; 
   }
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.1.16:8000/api/login', {
+      // ✅ Hachage du mot de passe (roomNumber) AVANT envoi avec expo-crypto
+      const hashedRoomNumber = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256, 
+        roomNumber
+      );
+
+      const response = await fetch('http://172.20.10.2:8000/api/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/ld+json',  // Assurez-vous d'indiquer le type JSON ici
+          'Content-Type': 'application/ld+json',
         },
         body: JSON.stringify({
-          lastname: lastname,  // Utilisation de 'lastname' au lieu de 'username'
-          roomNumber: roomNumber,  // Utilisation de 'roomNumber' au lieu de 'password'
+          lastname: lastname,
+          roomNumber: hashedRoomNumber, // Envoi la version hachée
         }),
       });
 
-      const responseData = await response.json();  // Analyse la réponse en JSON
+      const responseData = await response.json();
 
-      if (response.ok) {  // Si la réponse est 200-299, succès
+      if (response.ok) {
         alert('Login successful');
       } else {
         alert(responseData.message || 'Error: Invalid username or password');
@@ -61,7 +68,7 @@ const LoginForm = () => {
         <Text style={styles.title}>Room number</Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter your room numer"
+          placeholder="Enter your room number"
           secureTextEntry
           value={roomNumber}
           onChangeText={setRoomNumber}
