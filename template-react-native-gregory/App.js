@@ -14,7 +14,7 @@ const Stack = createStackNavigator();
 const App = () => {
   return (
     <NavigationContainer >
-      <Stack.Navigator initialRouteName="Alcohol" screenOptions={{ headerShown: false, animation: 'fade'}}>
+      <Stack.Navigator initialRouteName="LoginView" screenOptions={{ headerShown: false, animation: 'fade'}}>
         <Stack.Screen name="LoginView" component={LoginView} />
         <Stack.Screen name ="Home" component={HomeView} />
         <Stack.Screen name="Alcohol" component={AlcoholView} />

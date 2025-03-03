@@ -4,9 +4,11 @@ import * as Font from 'expo-font';
 import HomeHeader from './HomeHeader';
 import Searchbar from './Searchbar';
 import DrinkButtons from './DrinkButtons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Home = ({ navigation }) => {  // Ajout du prop navigation
+const Home = ({ navigation }) => {  
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [userId, setUserId] = useState(null);  // 🔹 Ajout d'un état pour stocker l'ID
 
   useEffect(() => {
     Font.loadAsync({
@@ -15,6 +17,20 @@ const Home = ({ navigation }) => {  // Ajout du prop navigation
       'Roboto-Regular': require('../assets/fonts/Roboto-Regular.ttf'),
       'Roboto-Condensed-SemiBold': require('../assets/fonts/Roboto_Condensed-SemiBold.ttf')
     }).then(() => setFontsLoaded(true));
+
+    // 🔹 Récupération de l'ID utilisateur depuis AsyncStorage
+    const fetchUserId = async () => {
+      try {
+        const storedId = await AsyncStorage.getItem('userId');
+        if (storedId) {
+          setUserId(storedId);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération de l\'ID utilisateur :', error);
+      }
+    };
+
+    fetchUserId();
   }, []);
 
   if (!fontsLoaded) {
@@ -26,9 +42,9 @@ const Home = ({ navigation }) => {  // Ajout du prop navigation
       <View style={styles.container}>
         <HomeHeader />
         <Searchbar />
-        {/* Passer navigation en prop à DrinkButtons */}
         <DrinkButtons navigation={navigation} />
-        <Text style={styles.text}>Bonjour</Text>
+        <Text style={styles.text}>{userId ? `ID: ${userId}` : 'Chargement...'}</Text> 
+        {/* 🔹 Affichage de l'ID ou "Chargement..." si non disponible */}
       </View>
     </TouchableWithoutFeedback>
   );

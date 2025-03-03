@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import * as Font from 'expo-font'; 
-import * as Crypto from 'expo-crypto';  // ✅ Importation de expo-crypto
+import * as Crypto from 'expo-crypto';  
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-const LoginForm = () => {  // Ajout du prop 'navigation'
+const LoginForm = () => {  
   const navigation = useNavigation();
-
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [lastname, setLastname] = useState('');
   const [roomNumber, setRoomNumber] = useState('');
@@ -28,19 +27,16 @@ const LoginForm = () => {  // Ajout du prop 'navigation'
 
   const handleLogin = async () => {
     try {
-      // Hachage du mot de passe (roomNumber) AVANT envoi avec expo-crypto
       const hashedRoomNumber = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256, 
         roomNumber
       );
 
-      // Création du payload avec lastname et roomNumber haché
       const userData = {
         lastname: lastname,
-        roomNumber: hashedRoomNumber, // On envoie la version hachée
+        roomNumber: hashedRoomNumber,
       };
 
-      // Envoi de la requête via fetch
       const response = await fetch(`${process.env.API_URL}/api/login`, {
         method: 'POST',
         headers: {
@@ -49,14 +45,15 @@ const LoginForm = () => {  // Ajout du prop 'navigation'
         body: JSON.stringify(userData),
       });
 
-      // Vérification de la réponse
       const responseData = await response.json();
+      console.log('API Response:', responseData);  // 🔹 Voir la réponse dans la console
 
-      if (response.ok) {
-        // Si la réponse est réussie, on navigue vers 'Home'
-        navigation.navigate('Home');  // Redirection vers l'écran Home
+      if (response.ok && responseData.id) {  // 🔹 Vérifier que `id` est bien présent
+        const userId = responseData.id.toString(); // 🔹 Convertir uniquement si défini
+
+        await AsyncStorage.setItem('userId', userId);
+        navigation.navigate('Home');  
       } else {
-        // En cas d'erreur, on affiche l'alerte
         alert(responseData.message || 'Error: Invalid username or password');
       }
     } catch (error) {
@@ -109,6 +106,7 @@ const LoginForm = () => {  // Ajout du prop 'navigation'
   );
 };
 
+// Styles...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
