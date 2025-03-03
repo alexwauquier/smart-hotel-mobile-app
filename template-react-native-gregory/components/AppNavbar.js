@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'; // Importation de useEffect
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import * as Font from 'expo-font'; // Importation de expo-font pour charger les polices
+import { useNavigation } from '@react-navigation/native';
 
 const AppNavbar = () => {
+  const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
@@ -21,7 +23,7 @@ const AppNavbar = () => {
   return (
     <View style={styles.container}>
       {/* Icône Cart - positionnée à 38px de la gauche */}
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('')}>
         <Image
           source={require('../assets/cart_navbar.png')} // Chemin vers l'image PNG
           style={[styles.image, styles.cartIcon]}
@@ -29,7 +31,7 @@ const AppNavbar = () => {
       </TouchableOpacity>
 
       {/* Icône Home - 40x40px et centrée */}
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('Home')}>
         <Image
           source={require('../assets/home_icon.png')}
           style={[styles.image, styles.homeIcon]}

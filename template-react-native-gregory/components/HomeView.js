@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react'; 
-import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import * as Font from 'expo-font'; 
 import HomeHeader from './HomeHeader';
-import Searchbar from './Searchbar';
-import DrinkButtons from './DrinkButtons';
+import Home from './Home';
+import AppNavbar from './AppNavbar';
+import AppHeader from './AppHeader';
 
-const Home = ({ navigation }) => {  // Ajout du prop navigation
+
+const HomeView = ({ navigation }) => {  // Ajout du prop 'navigation'
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  
 
   useEffect(() => {
     Font.loadAsync({
@@ -21,14 +24,14 @@ const Home = ({ navigation }) => {  // Ajout du prop navigation
     return null; 
   }
 
+
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
-        <HomeHeader />
-        <Searchbar />
-        {/* Passer navigation en prop à DrinkButtons */}
-        <DrinkButtons navigation={navigation} />
-        <Text style={styles.text}>Bonjour</Text>
+        <AppHeader></AppHeader>
+        <HomeHeader></HomeHeader>
+        <Home></Home>
+        <AppNavbar></AppNavbar>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -37,16 +40,9 @@ const Home = ({ navigation }) => {  // Ajout du prop navigation
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
-    backgroundColor: '#EFEFEF',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 30,
-  },
-  text: {
-    fontSize: 18,
-    marginTop: 20, 
   },
 });
 
-export default Home;
+export default HomeView;

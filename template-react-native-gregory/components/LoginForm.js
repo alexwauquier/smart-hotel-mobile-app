@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react'; 
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import * as Font from 'expo-font'; 
 import * as Crypto from 'expo-crypto';  // ✅ Importation de expo-crypto
+import { useNavigation } from '@react-navigation/native';
 
-const LoginForm = () => {
+
+const LoginForm = () => {  // Ajout du prop 'navigation'
+  const navigation = useNavigation();
+
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [lastname, setLastname] = useState('');
   const [roomNumber, setRoomNumber] = useState('');
@@ -24,28 +28,35 @@ const LoginForm = () => {
 
   const handleLogin = async () => {
     try {
-      // ✅ Hachage du mot de passe (roomNumber) AVANT envoi avec expo-crypto
+      // Hachage du mot de passe (roomNumber) AVANT envoi avec expo-crypto
       const hashedRoomNumber = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256, 
         roomNumber
       );
 
-      const response = await fetch('http://172.20.10.2:8000/api/login', {
+      // Création du payload avec lastname et roomNumber haché
+      const userData = {
+        lastname: lastname,
+        roomNumber: hashedRoomNumber, // On envoie la version hachée
+      };
+
+      // Envoi de la requête via fetch
+      const response = await fetch(`${process.env.API_URL}/api/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/ld+json',
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          lastname: lastname,
-          roomNumber: hashedRoomNumber, // Envoi la version hachée
-        }),
+        body: JSON.stringify(userData),
       });
 
+      // Vérification de la réponse
       const responseData = await response.json();
 
       if (response.ok) {
-        alert('Login successful');
+        // Si la réponse est réussie, on navigue vers 'Home'
+        navigation.navigate('Home');  // Redirection vers l'écran Home
       } else {
+        // En cas d'erreur, on affiche l'alerte
         alert(responseData.message || 'Error: Invalid username or password');
       }
     } catch (error) {

@@ -26,7 +26,7 @@ const Alcohol = () => {
       useNativeDriver: true,
     }).start();
 
-    fetch('http://192.168.1.16:8000/api/drinks')
+    fetch(`${process.env.API_URL}/api/drinks`)
       .then(response => response.json())
       .then(data => setAlcoholicDrinks(data['hydra:member']?.filter(drink => drink.alcoholic === false) || []))
       .catch(error => console.error('Erreur lors du fetch des boissons :', error));

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'; 
-import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import * as Font from 'expo-font'; 
-import HomeHeader from './HomeHeader';
-import Searchbar from './Searchbar';
-import DrinkButtons from './DrinkButtons';
+import HeaderLogin from './HeaderLogin';
+import LoginForm from './LoginForm';
 
-const Home = ({ navigation }) => {  // Ajout du prop navigation
+
+const LoginView = ({ navigation }) => {  // Ajout du prop 'navigation'
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [lastname, setLastname] = useState('');
+  const [roomNumber, setRoomNumber] = useState('');
 
   useEffect(() => {
     Font.loadAsync({
@@ -21,14 +23,12 @@ const Home = ({ navigation }) => {  // Ajout du prop navigation
     return null; 
   }
 
+
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
-        <HomeHeader />
-        <Searchbar />
-        {/* Passer navigation en prop à DrinkButtons */}
-        <DrinkButtons navigation={navigation} />
-        <Text style={styles.text}>Bonjour</Text>
+        <HeaderLogin></HeaderLogin>
+        <LoginForm></LoginForm>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -37,16 +37,9 @@ const Home = ({ navigation }) => {  // Ajout du prop navigation
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
-    backgroundColor: '#EFEFEF',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 30,
-  },
-  text: {
-    fontSize: 18,
-    marginTop: 20, 
   },
 });
 
-export default Home;
+export default LoginView;
