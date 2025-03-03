@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react'; 
-import { View, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, StyleSheet, TouchableWithoutFeedback, Text, Keyboard, TouchableOpacity, Image } from 'react-native';
 import * as Font from 'expo-font'; 
 import AppNavbar from './AppNavbar';
 import AppHeader from './AppHeader';
 import Alcohol from './Alcohol';
 
-
 const AlcoholView = ({ navigation }) => {  // Ajout du prop 'navigation'
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  
 
   useEffect(() => {
     Font.loadAsync({
@@ -19,17 +17,27 @@ const AlcoholView = ({ navigation }) => {  // Ajout du prop 'navigation'
     }).then(() => setFontsLoaded(true));
   }, []);
 
+  const handleSwitchToSofts = () => {
+    navigation.navigate('SoftsView'); // Change 'SoftsView' par le nom de ton écran de softs
+  };
+
   if (!fontsLoaded) {
     return null; 
   }
 
-
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
-        <AppHeader></AppHeader>
-        <Alcohol></Alcohol>
-        <AppNavbar></AppNavbar>
+        <AppHeader />
+        <Alcohol />
+        
+        {/* Bouton Switch To Softs */}
+        <TouchableOpacity style={styles.switchButton} onPress={handleSwitchToSofts}>
+          <Text style={styles.switchText}>SWITCH TO SOFTS</Text>
+          <Image source={require('../assets/arrow_right.png')} style={styles.arrowIcon} />
+        </TouchableOpacity>
+
+        <AppNavbar />
       </View>
     </TouchableWithoutFeedback>
   );
@@ -40,6 +48,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  switchButton: {
+    flexDirection: 'row', // Pour aligner le texte et l'image horizontalement
+    alignItems: 'center', // Centrer l'image et le texte sur la même ligne
+    marginTop: 20,
+    padding: 10,
+    borderRadius: 10,
+    width: '100%',
+    justifyContent: 'center',
+    backgroundColor: 'red',
+  },
+  switchText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 10, // Espacement entre le texte et l'image
+  },
+  arrowIcon: {
+    width: 30,
+    height: 30,
   },
 });
 
