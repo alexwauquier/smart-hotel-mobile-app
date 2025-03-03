@@ -4,8 +4,10 @@ import * as Font from 'expo-font';
 import AppNavbar from './AppNavbar';
 import AppHeader from './AppHeader';
 import Alcohol from './Alcohol';
+import { useNavigation } from '@react-navigation/native';
 
-const AlcoholView = ({ navigation }) => {  // Ajout du prop 'navigation'
+const AlcoholView = () => {  // Ajout du prop 'navigation'
+  const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
@@ -16,10 +18,7 @@ const AlcoholView = ({ navigation }) => {  // Ajout du prop 'navigation'
       'Roboto-Condensed-SemiBold': require('../assets/fonts/Roboto_Condensed-SemiBold.ttf')
     }).then(() => setFontsLoaded(true));
   }, []);
-
-  const handleSwitchToSofts = () => {
-    navigation.navigate('SoftsView'); // Change 'SoftsView' par le nom de ton écran de softs
-  };
+  
 
   if (!fontsLoaded) {
     return null; 
@@ -30,13 +29,10 @@ const AlcoholView = ({ navigation }) => {  // Ajout du prop 'navigation'
       <View style={styles.container}>
         <AppHeader />
         <Alcohol />
-        
-        {/* Bouton Switch To Softs */}
-        <TouchableOpacity style={styles.switchButton} onPress={handleSwitchToSofts}>
-          <Text style={styles.switchText}>SWITCH TO SOFTS</Text>
-          <Image source={require('../assets/arrow_right.png')} style={styles.arrowIcon} />
+        <TouchableOpacity style={styles.switchButton} onPress={() => navigation.navigate('Soft')}>
+                    <Text style={styles.switchText}>SWITCH TO SOFTS</Text>
+                    <Image source={require('../assets/arrow_right.png')} style={styles.arrowIcon} />
         </TouchableOpacity>
-
         <AppNavbar />
       </View>
     </TouchableWithoutFeedback>
@@ -48,26 +44,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#EFEFEF'
   },
   switchButton: {
-    flexDirection: 'row', // Pour aligner le texte et l'image horizontalement
-    alignItems: 'center', // Centrer l'image et le texte sur la même ligne
-    marginTop: 20,
+    flexDirection: 'row', // Align text and image horizontally
+    alignItems: 'center', // Center both elements
     padding: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0)',
     borderRadius: 10,
-    width: '100%',
+    width: '80%',
     justifyContent: 'center',
-    backgroundColor: 'red',
+    marginBottom: 70,
   },
   switchText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginRight: 10, // Espacement entre le texte et l'image
+    color: 'black',
+    fontSize: 14,
+    fontFamily: 'Roboto-Regular',
+    marginRight: 10, // Space between text and arrow
   },
   arrowIcon: {
     width: 30,
     height: 30,
+    tintColor: 'black',
   },
 });
 

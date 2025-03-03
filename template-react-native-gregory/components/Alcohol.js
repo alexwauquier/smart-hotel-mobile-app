@@ -28,7 +28,7 @@ const Alcohol = () => {
 
     fetch(`${process.env.API_URL}/api/drinks`)
       .then(response => response.json())
-      .then(data => setAlcoholicDrinks(data['hydra:member']?.filter(drink => drink.alcoholic === false) || []))
+      .then(data => setAlcoholicDrinks(data['hydra:member']?.filter(drink => drink.alcoholic === true) || []))
       .catch(error => console.error('Erreur lors du fetch des boissons :', error));
   }, []);
 
@@ -99,10 +99,6 @@ const Alcohol = () => {
           </Modal>
 
           {/* Switch Button below the list */}
-          <TouchableOpacity style={styles.switchButton} onPress={() => console.log('Switch to Softs')}>
-            <Text style={styles.switchText}>SWITCH TO SOFTS</Text>
-            <Image source={require('../assets/arrow_right.png')} style={styles.arrowIcon} />
-          </TouchableOpacity>
         </View>
       </Animated.View>
     </TouchableWithoutFeedback>
@@ -120,10 +116,6 @@ const styles = StyleSheet.create({
     padding: 20, 
     marginTop: 80,
     justifyContent: 'space-between', // Ensures button is at the bottom
-  },
-  listContainer: {
-    flex: 1, // This allows the FlatList to take available space
-    marginBottom: 20, // Ensures space between list and button
   },
   drinkItem: { 
     padding: 15, 
@@ -192,26 +184,6 @@ const styles = StyleSheet.create({
     fontSize: 16, 
     fontWeight: 'bold', 
     fontFamily: 'Averia-Serif-Libre-Regular' 
-  },
-  switchButton: {
-    flexDirection: 'row', // Align text and image horizontally
-    alignItems: 'center', // Center both elements
-    padding: 10,
-    backgroundColor: '#30A0BD',
-    borderRadius: 10,
-    width: '80%',
-    justifyContent: 'center',
-  },
-  switchText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginRight: 10, // Space between text and arrow
-  },
-  arrowIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#fff',
   },
 });
 
