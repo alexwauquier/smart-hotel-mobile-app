@@ -28,15 +28,18 @@ class AuthController extends AbstractController
         $username = $data['lastname'] ?? null;
         $password = $data['roomNumber'] ?? null;
 
-        // Utilise EntityManagerInterface pour accéder au repository de User
+        // Récupérer l'utilisateur par son lastname
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['lastname' => $username]);
 
         if (!$user || $user->getRoomNumber() !== $password) {
             return $this->json(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Connexion réussie
-        return $this->json(['message' => 'Login successful']);
+        // 🔹 Retourne l'ID dans la réponse
+        return $this->json([
+            'message' => 'Login successful',
+            'id' => $user->getId() // ✅ Ajout de l'ID dans la réponse
+        ]);
     }
 }
 
