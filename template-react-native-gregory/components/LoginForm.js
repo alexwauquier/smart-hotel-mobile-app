@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react'; 
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
-import * as Font from 'expo-font'; 
-import * as Crypto from 'expo-crypto';  
+import * as Font from 'expo-font';  
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginForm = () => {  
   const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [lastname, setLastname] = useState('');
-  const [roomNumber, setRoomNumber] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [spaceId, setSpaceId] = useState('');
 
   useEffect(() => {
     Font.loadAsync({
@@ -27,15 +26,21 @@ const LoginForm = () => {
 
   const handleLogin = async () => {
     try {
-      const hashedRoomNumber = await Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256, 
-        roomNumber
-      );
+      console.log('🔹 Valeurs saisies :', { lastName, spaceId });
+
+      // Convertir spaceId en nombre
+      const spaceIdInt = parseInt(spaceId, 10);
+      if (isNaN(spaceIdInt)) {
+        alert('Space ID doit être un nombre valide');
+        return;
+      }
 
       const userData = {
-        lastname: lastname,
-        roomNumber: hashedRoomNumber,
+        last_name: lastName,  // Correction : Utilisation de lastName avec minuscule
+        space_id: spaceIdInt,  // Assurez-vous que space_id est un entier
       };
+
+      console.log('📤 Données envoyées :', userData);
 
       const response = await fetch(`${process.env.API_URL}/api/login`, {
         method: 'POST',
@@ -45,11 +50,13 @@ const LoginForm = () => {
         body: JSON.stringify(userData),
       });
 
-      const responseData = await response.json();
-      console.log('API Response:', responseData);  // 🔹 Voir la réponse dans la console
+      console.log('📥 Réponse brute :', response);
 
-      if (response.ok && responseData.id) {  // 🔹 Vérifier que `id` est bien présent
-        const userId = responseData.id.toString(); // 🔹 Convertir uniquement si défini
+      const responseData = await response.json();
+      console.log('✅ Données reçues :', responseData);
+
+      if (response.ok && responseData.id) {  
+        const userId = responseData.id.toString(); 
 
         await AsyncStorage.setItem('userId', userId);
         navigation.navigate('Home');  
@@ -57,7 +64,7 @@ const LoginForm = () => {
         alert(responseData.message || 'Error: Invalid username or password');
       }
     } catch (error) {
-      console.error('Error during login:', error);
+      console.error('❌ Erreur lors de la connexion:', error);
       alert('An error occurred. Please try again.');
     }
   };
@@ -65,21 +72,21 @@ const LoginForm = () => {
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
-        <Text style={styles.title}>Lastname</Text>
+        <Text style={styles.title}>Last Name</Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter your lastname"
-          value={lastname}
-          onChangeText={setLastname}
+          placeholder="Enter your last name"
+          value={lastName}
+          onChangeText={setLastName}
         />
 
-        <Text style={styles.title}>Room number</Text>
+        <Text style={styles.title}>Room Number</Text>
         <TextInput
           style={styles.input}
           placeholder="Enter your room number"
-          secureTextEntry
-          value={roomNumber}
-          onChangeText={setRoomNumber}
+          value={spaceId}
+          onChangeText={setSpaceId}
+          keyboardType="numeric"  // Permet de forcer l'affichage du clavier numérique
         />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin}>

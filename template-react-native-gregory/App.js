@@ -6,6 +6,7 @@ import LoginView from './components/LoginView';
 import HomeView from './components/HomeView';
 import AlcoholView from './components/AlcoholView';
 import SoftView from './components/SoftView';
+import UserView from './components/UserView';
 
 
 
@@ -19,6 +20,7 @@ const App = () => {
         <Stack.Screen name ="Home" component={HomeView} />
         <Stack.Screen name="Alcohol" component={AlcoholView} />
         <Stack.Screen name="Soft" component={SoftView} />
+        <Stack.Screen name="UserView" component={UserView} />
 
       </Stack.Navigator>
     </NavigationContainer>

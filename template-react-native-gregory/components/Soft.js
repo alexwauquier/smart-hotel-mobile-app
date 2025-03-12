@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, FlatList, TouchableOpacity, Modal, Animated } from 'react-native';
 import * as Font from 'expo-font';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';  // Assure-toi d'importer AsyncStorage
 
-const Alcohol = () => {
+const SoftDrinks = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [alcoholicDrinks, setAlcoholicDrinks] = useState([]);
+  const [softDrinks, setSoftDrinks] = useState([]);
   const [selectedDrink, setSelectedDrink] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   const fadeAnim = useState(new Animated.Value(0))[0];
   const modalFadeAnim = useState(new Animated.Value(0))[0];
 
@@ -26,9 +27,13 @@ const Alcohol = () => {
       useNativeDriver: true,
     }).start();
 
-    fetch(`${process.env.API_URL}/api/drinks`)
+    fetch(`${process.env.API_URL}/api/products`)
       .then(response => response.json())
-      .then(data => setAlcoholicDrinks(data['hydra:member']?.filter(drink => drink.alcoholic === false) || []))
+      .then(data => {
+        const drinks = Array.isArray(data) ? data : [];
+        const soft = drinks.filter(drink => drink.contains_alcohol === false);
+        setSoftDrinks(soft || []);
+      })
       .catch(error => console.error('Erreur lors du fetch des boissons :', error));
   }, []);
 
@@ -45,23 +50,47 @@ const Alcohol = () => {
     });
   };
 
+  const addToCart = async (drinkId) => {
+    try {
+      let cart = await AsyncStorage.getItem('cart');
+      cart = cart ? JSON.parse(cart) : [];
+
+      const existingItemIndex = cart.findIndex(item => item.id === drinkId);
+
+      if (existingItemIndex !== -1) {
+        cart[existingItemIndex].quantity += 1;
+      } else {
+        cart.push({ id: drinkId, quantity: 1 });
+      }
+
+      await AsyncStorage.setItem('cart', JSON.stringify(cart));
+
+      console.log(`✅ Boisson ajoutée au panier : ID ${drinkId}`);
+      console.log("🛒 État du panier :", cart);
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'ajout au panier:', error);
+    }
+  };
+
   if (!fontsLoaded) return null;
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <Animated.View style={[styles.fullScreen, { opacity: fadeAnim }]}>
         <View style={styles.container}>
-          <FlatList
-            data={alcoholicDrinks}
-            keyExtractor={item => item.id.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => openModal(item)} style={styles.drinkItem}>
-                <Text style={styles.drinkName}>{item.name}</Text>
-                <Text style={styles.drinkIngredients}>Ingrédients : {item.ingredients}</Text>
-                <Text style={styles.drinkPrice}>Prix : {item.price}€</Text>
-              </TouchableOpacity>
-            )}
-          />
+          <View style={styles.listContainer}>
+            <FlatList
+              data={softDrinks}
+              keyExtractor={item => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => openModal(item)} style={styles.drinkItem}>
+                  <Text style={styles.drinkName}>{item.name}</Text>
+                  <Text style={styles.drinkIngredients}>Ingrédients : {item.ingredients}</Text>
+                  <Text style={styles.drinkPrice}>Prix : {item.unit_price}€</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
 
           <Modal transparent={true} visible={modalVisible} onRequestClose={closeModal}>
             <Animated.View style={[styles.modalContainer, { opacity: modalFadeAnim }]}>
@@ -70,9 +99,9 @@ const Alcohol = () => {
                   <>
                     <Text style={styles.modalTitle}>{selectedDrink.name}</Text>
                     <Text style={styles.modalText}>Ingrédients : {selectedDrink.ingredients}</Text>
-                    <Text style={styles.modalText}>Prix : {selectedDrink.price}€</Text>
+                    <Text style={styles.modalText}>Prix : {selectedDrink.unit_price}€</Text>
 
-                    <TouchableOpacity style={styles.button} onPress={() => console.log('Ajout au panier')}>
+                    <TouchableOpacity style={styles.button} onPress={() => addToCart(selectedDrink.id)}>
                       <Svg height="50" width="200" viewBox="0 0 200 50">
                         <Defs>
                           <LinearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -100,84 +129,89 @@ const Alcohol = () => {
 };
 
 const styles = StyleSheet.create({
-  fullScreen: { 
-    flex: 1, 
-    backgroundColor: '#EFEFEF', 
-    width: '100%' 
+  fullScreen: {
+    flex: 1,
+    backgroundColor: '#EFEFEF',
+    width: '100%',
   },
-  container: { 
-    flex: 1, 
-    padding: 20, 
-    marginTop: 80 
+  container: {
+    flex: 1,
+    padding: 20,
+    marginTop: 80,
+    justifyContent: 'space-between',
   },
-  drinkItem: { 
-    padding: 15, 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#ddd' 
+  listContainer: {
+    flex: 1,
+    marginBottom: 20,
   },
-  drinkName: { 
-    fontSize: 18, 
-    fontWeight: 'bold' 
+  drinkItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
   },
-  drinkIngredients: { 
-    fontSize: 14, 
-    color: '#555' 
+  drinkName: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
-  drinkPrice: { 
-    fontSize: 16, 
-    fontWeight: '600', 
-    color: '#000' 
+  drinkIngredients: {
+    fontSize: 14,
+    color: '#555',
   },
-  modalContainer: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    backgroundColor: 'rgba(0, 0, 0, 0.5)' 
+  drinkPrice: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
   },
-  modalContent: { 
-    width: 300, 
-    padding: 20, 
-    backgroundColor: '#fff', 
-    borderRadius: 10, 
-    alignItems: 'center' 
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  modalTitle: { 
-    fontSize: 20, 
-    fontWeight: 'bold', 
-    marginBottom: 10 
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
   },
-  modalText: { 
-    fontSize: 16, 
-    marginBottom: 10, 
-    textAlign: 'center' 
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
-  button: { 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    marginTop: 20, 
-    width: 200, 
-    height: 50, 
-    position: 'relative' 
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+    textAlign: 'center',
   },
-  buttonText: { 
-    position: 'absolute', 
-    color: '#fff', 
-    fontSize: 18, 
-    fontWeight: 'bold', 
-    fontFamily: 'Averia-Serif-Libre-Regular' 
+  button: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    width: 200,
+    height: 50,
+    position: 'relative',
   },
-  closeButton: { 
-    marginTop: 15, 
-    padding: 10, 
-    backgroundColor: '#d9534f', 
-    borderRadius: 5 
+  buttonText: {
+    position: 'absolute',
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: 'Averia-Serif-Libre-Regular',
   },
-  closeButtonText: { 
-    color: '#fff', 
-    fontSize: 16, 
-    fontWeight: 'bold', 
-    fontFamily: 'Averia-Serif-Libre-Regular' 
+  closeButton: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: '#d9534f',
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Averia-Serif-Libre-Regular',
   },
 });
 
-export default Alcohol;
+export default SoftDrinks;

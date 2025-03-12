@@ -39,7 +39,7 @@ const AppNavbar = () => {
       </TouchableOpacity>
 
       {/* Icône User - positionnée à 38px de la droite */}
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('UserView')}>
         <Image
           source={require('../assets/user_icon.png')}
           style={[styles.image, styles.userIcon]}
