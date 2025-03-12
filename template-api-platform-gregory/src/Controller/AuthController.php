@@ -1,10 +1,8 @@
 <?php
 
-// src/Controller/AuthController.php
-
 namespace App\Controller;
 
-use App\Entity\User;
+use App\Entity\Customer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,22 +23,22 @@ class AuthController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        $username = $data['lastname'] ?? null;
-        $password = $data['roomNumber'] ?? null;
+        $username = $data['last_name'] ?? null;
+        $password = $data['space_id'] ?? null;
 
-        // Récupérer l'utilisateur par son lastname
-        $user = $this->entityManager->getRepository(User::class)->findOneBy(['lastname' => $username]);
+        // Récupérer le client par son prénom
+        $customer = $this->entityManager->getRepository(Customer::class)->findOneBy(['last_name' => $username]);
 
-        if (!$user || $user->getRoomNumber() !== $password) {
+
+        if (!$customer || $customer->getSpaceId() !== $password) {
             return $this->json(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // 🔹 Retourne l'ID dans la réponse
+        // 🔹 Retourne l'ID du client dans la réponse
         return $this->json([
             'message' => 'Login successful',
-            'id' => $user->getId() // ✅ Ajout de l'ID dans la réponse
+            'id' => $customer->getId()
         ]);
     }
 }
 
-?>
