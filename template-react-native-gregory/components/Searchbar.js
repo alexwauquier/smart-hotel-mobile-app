@@ -29,7 +29,7 @@ const Searchbar = () => {
   // Fonction pour récupérer les boissons depuis l'API
   const fetchDrinks = async () => {
     try {
-      const response = await fetch(`${process.env.API_URL}/api/products`);
+      const response = await fetch(`http://192.168.112.35:3000/api/products`);
       const data = await response.json();
 
       if (!Array.isArray(data)) {

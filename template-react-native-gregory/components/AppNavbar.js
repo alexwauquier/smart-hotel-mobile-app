@@ -23,7 +23,7 @@ const AppNavbar = () => {
   return (
     <View style={styles.container}>
       {/* Icône Cart - positionnée à 38px de la gauche */}
-      <TouchableOpacity onPress={() => navigation.navigate('')}>
+      <TouchableOpacity onPress={() => navigation.navigate('CartView')}>
         <Image
           source={require('../assets/cart_navbar.png')} // Chemin vers l'image PNG
           style={[styles.image, styles.cartIcon]}

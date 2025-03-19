@@ -27,7 +27,7 @@ const SoftDrinks = () => {
       useNativeDriver: true,
     }).start();
 
-    fetch(`${process.env.API_URL}/api/products`)
+    fetch(`http://192.168.112.35:3000/api/products`)
       .then(response => response.json())
       .then(data => {
         const drinks = Array.isArray(data) ? data : [];

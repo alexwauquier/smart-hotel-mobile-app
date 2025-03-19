@@ -28,7 +28,6 @@ const LoginForm = () => {
     try {
       console.log('🔹 Valeurs saisies :', { lastName, spaceId });
 
-      // Convertir spaceId en nombre
       const spaceIdInt = parseInt(spaceId, 10);
       if (isNaN(spaceIdInt)) {
         alert('Space ID doit être un nombre valide');
@@ -36,13 +35,13 @@ const LoginForm = () => {
       }
 
       const userData = {
-        last_name: lastName,  // Correction : Utilisation de lastName avec minuscule
-        space_id: spaceIdInt,  // Assurez-vous que space_id est un entier
+        last_name: lastName,
+        space_id: spaceIdInt,
       };
 
       console.log('📤 Données envoyées :', userData);
 
-      const response = await fetch(`${process.env.API_URL}/api/login`, {
+      const response = await fetch(`http://192.168.112.35:3000/api/auth/login/customer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,13 +54,16 @@ const LoginForm = () => {
       const responseData = await response.json();
       console.log('✅ Données reçues :', responseData);
 
-      if (response.ok && responseData.id) {  
-        const userId = responseData.id.toString(); 
+      if (response.ok && responseData.customer) {
+        const userId = responseData.customer.id.toString();
+        const token = responseData.token;
 
         await AsyncStorage.setItem('userId', userId);
-        navigation.navigate('Home');  
+        await AsyncStorage.setItem('userToken', token);  // Stocke le token
+
+        navigation.navigate('Home');
       } else {
-        alert(responseData.message || 'Error: Invalid username or password');
+        alert(responseData.error || 'Error: Invalid username or password');
       }
     } catch (error) {
       console.error('❌ Erreur lors de la connexion:', error);
@@ -86,7 +88,7 @@ const LoginForm = () => {
           placeholder="Enter your room number"
           value={spaceId}
           onChangeText={setSpaceId}
-          keyboardType="numeric"  // Permet de forcer l'affichage du clavier numérique
+          keyboardType="numeric" 
         />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
