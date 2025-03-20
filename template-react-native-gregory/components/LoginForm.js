@@ -41,7 +41,7 @@ const LoginForm = () => {
 
       console.log('📤 Données envoyées :', userData);
 
-      const response = await fetch(`http://192.168.112.35:3000/api/auth/login/customer`, {
+      const response = await fetch(`https://smart-hotel-api.onrender.com/api/auth/login/customer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

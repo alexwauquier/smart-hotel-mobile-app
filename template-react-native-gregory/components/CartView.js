@@ -6,7 +6,7 @@ import AppNavbar from './AppNavbar';
 
 const fetchDrinkById = async (id) => {
   try {
-    const response = await fetch(`http://192.168.112.35:3000/api/products/${id}`);
+    const response = await fetch(`https://smart-hotel-api.onrender.com/api/products/${id}`);
     const data = await response.json();
     return data;
   } catch (error) {

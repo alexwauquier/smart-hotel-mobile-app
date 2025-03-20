@@ -20,7 +20,7 @@ const UserView = () => {
         
         if (userId) {
           // Appel API pour récupérer les informations de l'utilisateur
-          const response = await fetch(`http://192.168.112.35:3000/api/customers/${userId}`);
+          const response = await fetch(`https://smart-hotel-api.onrender.com/api/customers/${userId}`);
           const data = await response.json();
           console.log("Data received from API:", data); // Affiche la réponse de l'API
 
