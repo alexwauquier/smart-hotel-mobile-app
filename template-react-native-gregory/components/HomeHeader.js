@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Modal } from 'react-native';
-import * as Font from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useNavigation } from '@react-navigation/native';
 
-// Fonction pour récupérer les détails d'une boisson via son ID
 const fetchDrinkById = async (id) => {
   try {
     const response = await fetch(`https://smart-hotel-api.onrender.com/api/products/${id}`);
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Erreur lors de la récupération de la boisson :", error);
     return null;
@@ -16,130 +15,92 @@ const fetchDrinkById = async (id) => {
 };
 
 const HomeHeader = () => {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedTable, setSelectedTable] = useState("XXX");
-  const [cart, setCart] = useState([]);  
+  const [hasPermission, setHasPermission] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannedTable, setScannedTable] = useState("XXX");
+  const [cart, setCart] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [cartDetails, setCartDetails] = useState([]); 
-  const [totalPrice, setTotalPrice] = useState(0); 
+  const [cartDetails, setCartDetails] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const navigation = useNavigation();
 
-  const tableNumbers = ["101", "102", "103", "104", "105"];
+  // Demander les permissions à la caméra
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
 
   useEffect(() => {
-    Font.loadAsync({
-      'Averia-Serif-Libre-Regular': require('../assets/fonts/AveriaSerifLibre-Regular.ttf'),
-      'Averia-Serif-Libre-Bold': require('../assets/fonts/AveriaSerifLibre-Bold.ttf'),
-      'Roboto-Regular': require('../assets/fonts/Roboto-Regular.ttf'),
-      'Roboto-Condensed-SemiBold': require('../assets/fonts/Roboto_Condensed-SemiBold.ttf')
-    }).then(() => setFontsLoaded(true));
-  }, []);
+    if (cameraPermission?.status !== 'granted') {
+      requestCameraPermission();
+    } else {
+      setHasPermission(true);
+    }
+  }, [cameraPermission]);
 
-  // Fonction pour récupérer les données du panier et actualiser l'état
+  const handleScanQRCode = () => setIsScanning(true);
+
+  const handleBarCodeScanned = ({ data }) => {
+    setScannedTable(data);
+    setIsScanning(false);
+    alert(`Table scannée : ${data}`);
+  };
+
   const fetchCartDetails = async () => {
     try {
       const cartData = await AsyncStorage.getItem('cart');
-      if (cartData) {
-        const cartArray = JSON.parse(cartData);
-        setCart(cartArray);  // Met à jour le panier
-        const drinkDetails = [];
-        let total = 0;
+      if (!cartData) return;
 
-        // Récupérer les détails pour chaque boisson
-        for (const item of cartArray) {
-          const drinkData = await fetchDrinkById(item.id);
-          if (drinkData) {
-            const drinkTotal = drinkData.unit_price * item.quantity;
-            drinkDetails.push({
-              ...drinkData,
-              quantity: item.quantity,
-              totalPrice: drinkTotal,
-            });
-            total += drinkTotal;
-          }
-        }
+      const cartArray = JSON.parse(cartData);
+      setCart(cartArray);
 
-        setCartDetails(drinkDetails);
-        setTotalPrice(total);
-      }
+      const drinks = await Promise.all(
+        cartArray.map(async (item) => {
+          const drink = await fetchDrinkById(item.id);
+          return drink ? { ...drink, quantity: item.quantity, totalPrice: drink.unit_price * item.quantity } : null;
+        })
+      );
+
+      const validDrinks = drinks.filter(Boolean);
+      setCartDetails(validDrinks);
+      setTotalPrice(validDrinks.reduce((sum, item) => sum + item.totalPrice, 0));
     } catch (error) {
-      console.error("Erreur lors de la récupération des détails du panier :", error);
+      console.error("Erreur lors de la récupération du panier :", error);
     }
   };
 
+  const removeFromCart = async (id) => {
+    const updatedCart = cart.filter(item => item.id !== id);
+    await AsyncStorage.setItem('cart', JSON.stringify(updatedCart));
+    setCart(updatedCart);
+    fetchCartDetails();
+  };
+
   const openCartModal = async () => {
-    await fetchCartDetails();  // Met à jour le panier chaque fois qu'on ouvre la modal
-    setModalVisible(true);  // Ouvre la modal
+    await fetchCartDetails();
+    setModalVisible(true);
   };
 
-  const validateCart = () => {
-    console.log("Panier validé :", cartDetails);
-    setModalVisible(false);
-  };
-
-  const emptyCart = async () => {
-    await AsyncStorage.removeItem('cart');
-    setCart([]);  // Met à jour l'état du panier dans l'interface
-    setCartDetails([]);  // Vide également les détails du panier
-    setTotalPrice(0);  // Réinitialise le prix total
-    console.log("Panier vidé !");
-  };
-
-  if (!fontsLoaded) {
-    return null;
-  }
+  if (hasPermission === null) return <Text>Demande de permission...</Text>;
+  if (hasPermission === false) return <Text>Permission caméra refusée</Text>;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text_table}>Table n°{selectedTable}</Text>
+      <Text style={styles.text_table}>Table n°{scannedTable}</Text>
 
-      <TouchableOpacity style={styles.arrow} onPress={() => setIsMenuOpen(!isMenuOpen)}>
-        <Image
-          source={require('../assets/arrow_table.png')}
-          style={[styles.icon, isMenuOpen && styles.iconRotated]}
-        />
+      <TouchableOpacity style={styles.scan} onPress={() => navigation.navigate('CameraScreen')}>
+        <Image source={require('../assets/scan_icon.png')} style={styles.icon} />
       </TouchableOpacity>
 
-      {isMenuOpen && (
-        <View style={styles.menu}>
-          <FlatList
-            data={tableNumbers}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  setSelectedTable(item);
-                  setIsMenuOpen(false);
-                }}
-              >
-                <Text style={styles.menuText}>Table n°{item}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
+      {isScanning && cameraPermission?.status === 'granted' && (
+        <CameraView
+          style={styles.camera}
+          onBarCodeScanned={handleBarCodeScanned}
+        />
       )}
 
-      <TouchableOpacity style={styles.scan}>
-        <Image
-          source={require('../assets/scan_icon.png')}
-          style={styles.icon}
-        />
-      </TouchableOpacity>
-
       <TouchableOpacity style={styles.cart} onPress={openCartModal}>
-        <Image
-          source={require('../assets/cart_navbar.png')}
-          style={styles.icon}
-        />
+        <Image source={require('../assets/cart_navbar.png')} style={styles.icon} />
       </TouchableOpacity>
 
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
+      <Modal animationType="fade" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Your Cart</Text>
@@ -151,21 +112,16 @@ const HomeHeader = () => {
                 <View style={styles.cartItem}>
                   <Text style={styles.cartItemName}>{item.name}</Text>
                   <Text style={styles.cartItemDetails}>
-                    {item.quantity} x {item.unit_price}$ = {(item.quantity * item.unit_price).toFixed(2)}$
+                    {item.quantity} x {item.unit_price}$ = {item.totalPrice.toFixed(2)}$
                   </Text>
+                  <TouchableOpacity onPress={() => removeFromCart(item.id)}>
+                    <Text style={styles.removeText}>Supprimer</Text>
+                  </TouchableOpacity>
                 </View>
               )}
             />
 
             <Text style={styles.totalPrice}>Total: {totalPrice.toFixed(2)}$</Text>
-
-            <TouchableOpacity onPress={validateCart} style={styles.validateButton}>
-              <Text style={styles.buttonText}>Validate Cart</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={emptyCart} style={styles.emptyButton}>
-              <Text style={styles.buttonText}>Empty Cart</Text>
-            </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
               <Text style={styles.buttonText}>Close</Text>
@@ -183,22 +139,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: 60,
-    position: 'relative'
+    position: 'relative',
   },
   text_table: {
-    fontFamily: 'Roboto-Regular',
     fontSize: 21,
     marginLeft: 21,
-  },
-  arrow: {
-    marginLeft: 5,
-  },
-  icon: {
-    width: 24,
-    height: 24,
-  },
-  iconRotated: {
-    transform: [{ rotate: '180deg' }],
   },
   scan: {
     position: 'absolute',
@@ -208,26 +153,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 25,
   },
-  menu: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
-    zIndex: 10,
+  icon: {
+    width: 24,
+    height: 24,
   },
-  menuItem: {
-    paddingVertical: 8,
-  },
-  menuText: {
-    fontSize: 18,
-    fontFamily: 'Roboto-Regular',
+  camera: {
+    position: 'absolute',  // Assurez-vous que la caméra soit bien en position absolue
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,  // Prendre tout l'espace disponible
+    zIndex: 9999,  // Forcer la caméra à être au premier plan
   },
   modalContainer: {
     flex: 1,
@@ -252,6 +188,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   cartItemName: {
     fontSize: 18,
@@ -261,18 +200,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
+  removeText: {
+    color: 'red',
+    fontSize: 16,
+  },
   totalPrice: {
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: 15,
     textAlign: 'center',
-  },
-  validateButton: {
-    backgroundColor: '#4CAF50',
-    padding: 10,
-    marginTop: 20,
-    borderRadius: 5,
-    alignItems: 'center',
   },
   closeButton: {
     backgroundColor: '#E2E2E2',
@@ -281,15 +217,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
   },
-  emptyButton: {
-    backgroundColor: '#FF6347',
-    padding: 10,
-    marginTop: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
   buttonText: {
-    color: 'white',
+    color: 'black',
     fontSize: 16,
   },
 });
