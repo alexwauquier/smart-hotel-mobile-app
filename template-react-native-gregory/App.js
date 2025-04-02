@@ -11,6 +11,8 @@ import UserView from './components/UserView';
 import TableQRCode from './components/QrCodeGenerator';
 import CameraScreen from './components/CameraScreen';
 import ShippingAdvert from './components/ShippingAdvert';
+import ShippingResume from './components/ShippingResume';
+import ShippingComplet from './components/ShippingComplet';
 
 
 const Stack = createStackNavigator();
@@ -28,6 +30,8 @@ const App = () => {
         <Stack.Screen name="TableQRCode" component={TableQRCode} />
         <Stack.Screen name="CameraScreen" component={CameraScreen} />
         <Stack.Screen name="ShippingAdvert" component={ShippingAdvert} />
+        <Stack.Screen name="ShippingResume" component={ShippingResume} />
+        <Stack.Screen name="ShippingComplet" component={ShippingComplet} />
 
 
       </Stack.Navigator>
