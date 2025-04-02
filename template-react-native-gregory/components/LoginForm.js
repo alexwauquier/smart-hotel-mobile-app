@@ -56,11 +56,10 @@ const LoginForm = () => {
 
       if (response.ok && responseData.customer) {
         const userId = responseData.customer.id.toString();
-        const token = responseData.token;
+        const token = responseData.token.toString();
 
         await AsyncStorage.setItem('userId', userId);
         await AsyncStorage.setItem('userToken', token);  // Stocke le token
-
         navigation.navigate('Home');
       } else {
         alert(responseData.error || 'Error: Invalid username or password');

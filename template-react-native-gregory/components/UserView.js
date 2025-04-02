@@ -17,26 +17,34 @@ const UserView = () => {
     const fetchUserData = async () => {
       try {
         const userId = await AsyncStorage.getItem('userId');
-        
-        if (userId) {
-          // Appel API pour récupérer les informations de l'utilisateur
-          const response = await fetch(`https://smart-hotel-api.onrender.com/api/customers/${userId}`);
+        const userToken = await AsyncStorage.getItem('userToken');
+    
+        if (userId && userToken) {
+          const response = await fetch(`https://smart-hotel-api.onrender.com/api/customers/${userId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${userToken}`,
+            },
+          });
+    
           const data = await response.json();
-          console.log("Data received from API:", data); // Affiche la réponse de l'API
-
+          console.log("Data received from API:", data);
+    
           if (response.ok) {
             setUser(data);
           } else {
             setError(data.error || 'Erreur lors de la récupération des données');
           }
         } else {
-          setError('Aucun ID utilisateur trouvé');
+          setError('Aucun ID utilisateur ou token trouvé');
         }
       } catch (err) {
         setError('Une erreur est survenue lors de la récupération des données');
         console.error(err);
       }
     };
+    
 
     fetchUserData();
   }, []);

@@ -27,14 +27,28 @@ const SoftDrinks = () => {
       useNativeDriver: true,
     }).start();
 
-    fetch(`https://smart-hotel-api.onrender.com/api/products`)
-      .then(response => response.json())
-      .then(data => {
+    const fetchSoftDrinks = async () => {
+      try {
+        const userToken = await AsyncStorage.getItem('userToken');
+    
+        const response = await fetch(`https://smart-hotel-api.onrender.com/api/products`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`,
+          },
+        });
+    
+        const data = await response.json();
+    
         const drinks = Array.isArray(data) ? data : [];
         const soft = drinks.filter(drink => drink.contains_alcohol === false);
-        setSoftDrinks(soft || []);
-      })
-      .catch(error => console.error('Erreur lors du fetch des boissons :', error));
+        setSoftDrinks(soft);
+      } catch (error) {
+        console.error('Erreur lors du fetch des boissons :', error);
+      }
+    };
+fetchSoftDrinks();    
   }, []);
 
   const openModal = (drink) => {

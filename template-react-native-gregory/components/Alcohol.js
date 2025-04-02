@@ -28,14 +28,25 @@ const AlcoholDrinks = () => {
     }).start();
 
     // Appel API pour récupérer les produits
-    fetch(`https://smart-hotel-api.onrender.com/api/products`)
-      .then(response => response.json())
-      .then(data => {
-        const drinks = data || [];
-        const alcoholic = drinks.filter(drink => drink.contains_alcohol === true);
-        setAlcoholDrinks(alcoholic);
+    const fetchDrinks = async () => {
+      const userToken = await AsyncStorage.getItem('userToken');
+    
+      fetch(`https://smart-hotel-api.onrender.com/api/products`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`,
+        },
       })
-      .catch(error => console.error('Erreur lors du fetch des boissons :', error));
+        .then(response => response.json())
+        .then(data => {
+          const drinks = data || [];
+          const alcoholic = drinks.filter(drink => drink.contains_alcohol === true);
+          setAlcoholDrinks(alcoholic);
+        })
+        .catch(error => console.error('Erreur lors du fetch des boissons :', error));
+    };
+  fetchDrinks();    
   }, []);
 
   const openModal = (drink) => {

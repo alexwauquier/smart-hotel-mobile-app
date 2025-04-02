@@ -1,13 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useNavigation } from '@react-navigation/native';
+import Searchbar from './Searchbar';
 
 const fetchDrinkById = async (id) => {
+  const userToken = await AsyncStorage.getItem('userToken');
+
+  if (!userToken) {
+    return null;
+  }
+
   try {
-    const response = await fetch(`https://smart-hotel-api.onrender.com/api/products/${id}`);
-    return await response.json();
+    const response = await fetch(`https://smart-hotel-api.onrender.com/api/products/${id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${userToken}`, // Correction ici
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur API:", errorText);
+      return null;
+    }
+
+    return response.json();
   } catch (error) {
     console.error("Erreur lors de la récupération de la boisson :", error);
     return null;
@@ -15,33 +33,24 @@ const fetchDrinkById = async (id) => {
 };
 
 const HomeHeader = () => {
-  const [hasPermission, setHasPermission] = useState(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const [scannedTable, setScannedTable] = useState("XXX");
   const [cart, setCart] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
   const [cartDetails, setCartDetails] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [tokenLoaded, setTokenLoaded] = useState(false);
   const navigation = useNavigation();
 
-  // Demander les permissions à la caméra
-  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-
   useEffect(() => {
-    if (cameraPermission?.status !== 'granted') {
-      requestCameraPermission();
-    } else {
-      setHasPermission(true);
-    }
-  }, [cameraPermission]);
+    const checkTokenAndFetchCart = async () => {
+      const token = await AsyncStorage.getItem('userToken');
+      if (token) {
+        setTokenLoaded(true);
+        fetchCartDetails();
+      }
+    };
 
-  const handleScanQRCode = () => setIsScanning(true);
-
-  const handleBarCodeScanned = ({ data }) => {
-    setScannedTable(data);
-    setIsScanning(false);
-    alert(`Table scannée : ${data}`);
-  };
+    checkTokenAndFetchCart();
+  }, []);
 
   const fetchCartDetails = async () => {
     try {
@@ -66,35 +75,17 @@ const HomeHeader = () => {
     }
   };
 
-  const removeFromCart = async (id) => {
-    const updatedCart = cart.filter(item => item.id !== id);
-    await AsyncStorage.setItem('cart', JSON.stringify(updatedCart));
-    setCart(updatedCart);
-    fetchCartDetails();
-  };
-
   const openCartModal = async () => {
-    await fetchCartDetails();
+    if (tokenLoaded) {
+      await fetchCartDetails();
+    }
     setModalVisible(true);
   };
 
-  if (hasPermission === null) return <Text>Demande de permission...</Text>;
-  if (hasPermission === false) return <Text>Permission caméra refusée</Text>;
-
   return (
     <View style={styles.container}>
-      <Text style={styles.text_table}>Table n°{scannedTable}</Text>
-
-      <TouchableOpacity style={styles.scan} onPress={() => navigation.navigate('CameraScreen')}>
-        <Image source={require('../assets/scan_icon.png')} style={styles.icon} />
-      </TouchableOpacity>
-
-      {isScanning && cameraPermission?.status === 'granted' && (
-        <CameraView
-          style={styles.camera}
-          onBarCodeScanned={handleBarCodeScanned}
-        />
-      )}
+      
+      <Searchbar style={styles.searchbar} />
 
       <TouchableOpacity style={styles.cart} onPress={openCartModal}>
         <Image source={require('../assets/cart_navbar.png')} style={styles.icon} />
@@ -114,14 +105,15 @@ const HomeHeader = () => {
                   <Text style={styles.cartItemDetails}>
                     {item.quantity} x {item.unit_price}$ = {item.totalPrice.toFixed(2)}$
                   </Text>
-                  <TouchableOpacity onPress={() => removeFromCart(item.id)}>
-                    <Text style={styles.removeText}>Supprimer</Text>
-                  </TouchableOpacity>
                 </View>
               )}
             />
 
             <Text style={styles.totalPrice}>Total: {totalPrice.toFixed(2)}$</Text>
+
+            <TouchableOpacity onPress={() => {setModalVisible(false); navigation.navigate('ShippingAdvert') }} style={styles.ValidateButton}>
+              <Text style={styles.buttonText}>Validate Cart</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
               <Text style={styles.buttonText}>Close</Text>
@@ -141,29 +133,14 @@ const styles = StyleSheet.create({
     height: 60,
     position: 'relative',
   },
-  text_table: {
-    fontSize: 21,
-    marginLeft: 21,
-  },
-  scan: {
-    position: 'absolute',
-    right: 74,
-  },
   cart: {
     position: 'absolute',
     right: 25,
+    top: 30,
   },
   icon: {
     width: 24,
     height: 24,
-  },
-  camera: {
-    position: 'absolute',  // Assurez-vous que la caméra soit bien en position absolue
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,  // Prendre tout l'espace disponible
-    zIndex: 9999,  // Forcer la caméra à être au premier plan
   },
   modalContainer: {
     flex: 1,
@@ -200,10 +177,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
-  removeText: {
-    color: 'red',
-    fontSize: 16,
-  },
   totalPrice: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -217,9 +190,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
   },
+  ValidateButton: {
+    backgroundColor: '#4FCC30',
+    padding: 10,
+    marginTop: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
   buttonText: {
     color: 'black',
     fontSize: 16,
+  },
+  searchbar: {
+    marginLeft: 27,
   },
 });
 

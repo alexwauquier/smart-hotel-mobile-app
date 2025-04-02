@@ -3,10 +3,20 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Modal } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppHeader from './AppHeader';
 import AppNavbar from './AppNavbar';
+import { useNavigation } from '@react-navigation/native';
 
 const fetchDrinkById = async (id) => {
   try {
-    const response = await fetch(`https://smart-hotel-api.onrender.com/api/products/${id}`);
+    const userToken = await AsyncStorage.getItem('userToken');
+
+    const response = await fetch(`https://smart-hotel-api.onrender.com/api/products/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${userToken}`,
+      },
+    });
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -15,7 +25,9 @@ const fetchDrinkById = async (id) => {
   }
 };
 
+
 const CartView = () => {
+  const navigation = useNavigation();
   const [cartItems, setCartItems] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -108,7 +120,7 @@ const CartView = () => {
       )}
 
       <View style={styles.ButtonLine}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('ShippingAdvert')}>
           <Image source={require('../assets/validate.png')} style={styles.buttonValidate} />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleDeleteCart}>

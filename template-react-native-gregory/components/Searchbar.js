@@ -29,26 +29,36 @@ const Searchbar = () => {
   // Fonction pour récupérer les boissons depuis l'API
   const fetchDrinks = async () => {
     try {
-      const response = await fetch(`https://smart-hotel-api.onrender.com/api/products`);
+      const userToken = await AsyncStorage.getItem('userToken');
+  
+      const response = await fetch(`https://smart-hotel-api.onrender.com/api/products`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`,
+        },
+      });
+  
       const data = await response.json();
-
+  
       if (!Array.isArray(data)) {
         console.error("Erreur : la réponse de l'API n'est pas un tableau.", data);
         return;
       }
-
+  
       const drinksList = data.map(drink => ({
         ...drink,
-        nameUpper: drink.name.toUpperCase(), 
+        nameUpper: drink.name.toUpperCase(),
         ingredientsUpper: drink.ingredients.toUpperCase(),
       }));
-
+  
       setDrinks(drinksList);
-      setFilteredDrinks(drinksList); 
+      setFilteredDrinks(drinksList);
     } catch (error) {
       console.error("Erreur lors du fetch des boissons :", error);
     }
   };
+  
 
   // Rechercher les boissons en fonction de la query
   const handleSearch = () => {
@@ -232,11 +242,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     backgroundColor: '#E2E2E2',
-    width: 340,
+    width: 287,
     borderRadius: 20,
     height: 40,
     alignItems: 'center',
     paddingHorizontal: 10,
+    marginLeft: 27,
+    marginTop: 20
   },
   searchIcon: {
     width: 25,

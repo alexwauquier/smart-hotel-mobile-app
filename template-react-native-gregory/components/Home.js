@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import * as Font from 'expo-font'; 
 import HomeHeader from './HomeHeader';
-import Searchbar from './Searchbar';
 import DrinkButtons from './DrinkButtons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -41,7 +40,6 @@ const Home = ({ navigation }) => {
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
         <HomeHeader />
-        <Searchbar />
         <DrinkButtons navigation={navigation} />
         <Text style={styles.text}>{userId ? `ID: ${userId}` : 'Chargement...'}</Text> 
         {/* 🔹 Affichage de l'ID ou "Chargement..." si non disponible */}
