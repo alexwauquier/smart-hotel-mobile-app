@@ -168,7 +168,8 @@ const styles = StyleSheet.create({
   },
   drinkTitle: { 
     fontSize: 18, 
-    fontFamily: 'Averia-Serif-Libre-Regular' 
+    fontFamily: 'Averia-Serif-Libre-Regular',
+    marginRight: 5, 
   },
   drinkPrice: { 
     fontSize: 14, 
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' 
   },
   drinkContainer: { 
-    width: 300,
+    width: 350,
     height: 100,
     padding: 10, 
     backgroundColor: '#F5F5F5', 
@@ -222,7 +223,8 @@ const styles = StyleSheet.create({
   plusIcon: { 
     width: 30, 
     height: 30, 
-    marginLeft: 10 
+    marginLeft: 10,
+    marginRight: 5,
   },
   quantityLine: { 
     flexDirection: 'row', 

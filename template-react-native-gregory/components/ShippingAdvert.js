@@ -42,7 +42,7 @@ const ShippingAdvert = () => {
             </Text>
         </View>
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CameraScreen')}>
             <Svg height="100%" width="100%" viewBox="0 0 200 100">
                 <Defs>
                     <LinearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
     marginTop: 100,
+    alignSelf: 'center',
   },
   text: {
     fontSize: 13,
