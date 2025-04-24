@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Image, TouchableWithoutFeedback, Keyboard, TouchableOpacity, FlatList, Text, Modal, ActivityIndicator } from 'react-native';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Image,
+  TouchableWithoutFeedback,
+  Keyboard,
+  TouchableOpacity,
+  FlatList,
+  Text,
+  Modal,
+  ActivityIndicator
+} from 'react-native';
 import * as Font from 'expo-font';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,13 +19,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const Searchbar = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [drinks, setDrinks] = useState([]); 
-  const [filteredDrinks, setFilteredDrinks] = useState([]); 
-  const [modalVisible, setModalVisible] = useState(false); 
-  const [drinkDetailModalVisible, setDrinkDetailModalVisible] = useState(false); 
-  const [addToCartModalVisible, setAddToCartModalVisible] = useState(false); // Nouvelle modale
-  const [selectedDrink, setSelectedDrink] = useState(null); 
-  const [loading, setLoading] = useState(true); // État pour gérer l'animation de chargement
+  const [drinks, setDrinks] = useState([]);
+  const [filteredDrinks, setFilteredDrinks] = useState([]);
+  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  
+  const [filterAlcohol, setFilterAlcohol] = useState(null); // null = tous, true = alcool, false = sans alcool
+
+  const [drinkDetailModalVisible, setDrinkDetailModalVisible] = useState(false);
+  const [addToCartModalVisible, setAddToCartModalVisible] = useState(false);
+  const [selectedDrink, setSelectedDrink] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Font.loadAsync({
@@ -21,16 +38,12 @@ const Searchbar = () => {
       'Averia-Serif-Libre-Bold': require('../assets/fonts/AveriaSerifLibre-Bold.ttf'),
       'Roboto-Regular': require('../assets/fonts/Roboto-Regular.ttf'),
       'Roboto-Condensed-SemiBold': require('../assets/fonts/Roboto_Condensed-SemiBold.ttf'),
-    }).then(() => {
-      setFontsLoaded(true);
-    });
+    }).then(() => setFontsLoaded(true));
   }, []);
 
-  // Fonction pour récupérer les boissons depuis l'API
   const fetchDrinks = async () => {
     try {
       const userToken = await AsyncStorage.getItem('userToken');
-  
       const response = await fetch(`https://smart-hotel-api.onrender.com/api/products`, {
         method: 'GET',
         headers: {
@@ -38,75 +51,20 @@ const Searchbar = () => {
           'Authorization': `Bearer ${userToken}`,
         },
       });
-  
       const data = await response.json();
-  
       if (!Array.isArray(data)) {
         console.error("Erreur : la réponse de l'API n'est pas un tableau.", data);
         return;
       }
-  
       const drinksList = data.map(drink => ({
         ...drink,
         nameUpper: drink.name.toUpperCase(),
         ingredientsUpper: drink.ingredients.toUpperCase(),
       }));
-  
       setDrinks(drinksList);
       setFilteredDrinks(drinksList);
     } catch (error) {
       console.error("Erreur lors du fetch des boissons :", error);
-    }
-  };
-  
-
-  // Rechercher les boissons en fonction de la query
-  const handleSearch = () => {
-    if (searchQuery.trim() === '') {
-      setFilteredDrinks(drinks);
-      return;
-    }
-
-    const results = drinks.filter(drink =>
-      drink.nameUpper.includes(searchQuery.toUpperCase()) || 
-      drink.ingredientsUpper.includes(searchQuery.toUpperCase())
-    );
-
-    setFilteredDrinks(results);
-    setModalVisible(true);
-  };
-
-  // Fonction pour ouvrir la seconde modale avec les détails de la boisson
-  const openDrinkDetails = (drink) => {
-    setSelectedDrink(drink);
-    setModalVisible(false);
-    setDrinkDetailModalVisible(true);
-  };
-
-  // Fonction pour ajouter une boisson au panier dans AsyncStorage
-  const addToCart = async (drinkId) => {
-    try {
-      let cart = await AsyncStorage.getItem('cart');
-      cart = cart ? JSON.parse(cart) : [];
-
-      const existingItemIndex = cart.findIndex(item => item.id === drinkId);
-
-      if (existingItemIndex !== -1) {
-        cart[existingItemIndex].quantity += 1;
-      } else {
-        cart.push({ id: drinkId, quantity: 1 });
-      }
-
-      await AsyncStorage.setItem('cart', JSON.stringify(cart));
-
-      console.log(`✅ Boisson ajoutée au panier : ID ${drinkId}`);
-      console.log("🛒 État du panier :", cart);
-
-      // Fermer la modale de détails et ouvrir la modale de confirmation
-      setDrinkDetailModalVisible(false);
-      setAddToCartModalVisible(true); // Ouvrir la modale de confirmation
-    } catch (error) {
-      console.error('❌ Erreur lors de l\'ajout au panier:', error);
     }
   };
 
@@ -114,27 +72,76 @@ const Searchbar = () => {
     fetchDrinks();
   }, []);
 
-  // Gérer l'animation de chargement avant d'afficher le texte
+  const handleSearch = () => {
+    let results = drinks.filter(drink =>
+      drink.nameUpper.includes(searchQuery.toUpperCase()) ||
+      drink.ingredientsUpper.includes(searchQuery.toUpperCase())
+    );
+    if (filterAlcohol === true)      results = results.filter(d => d.contains_alcohol);
+    else if (filterAlcohol === false) results = results.filter(d => !d.contains_alcohol);
+    if (searchQuery.trim() === '' && filterAlcohol === null) results = drinks;
+    setFilteredDrinks(results);
+    setModalVisible(true);
+  };
+
+  const openDrinkDetails = (drink) => {
+    setSelectedDrink(drink);
+    setModalVisible(false);
+    setDrinkDetailModalVisible(true);
+  };
+
+  const addToCart = async (drinkId) => {
+    try {
+      let cart = await AsyncStorage.getItem('cart');
+      cart = cart ? JSON.parse(cart) : [];
+      const idx = cart.findIndex(i => i.id === drinkId);
+      if (idx !== -1) cart[idx].quantity += 1;
+      else cart.push({ id: drinkId, quantity: 1 });
+      await AsyncStorage.setItem('cart', JSON.stringify(cart));
+      setDrinkDetailModalVisible(false);
+      setAddToCartModalVisible(true);
+    } catch (err) {
+      console.error('❌ Erreur lors de l\'ajout au panier:', err);
+    }
+  };
+
   useEffect(() => {
     if (addToCartModalVisible) {
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false); // Afficher le texte après l'animation
-      }, 2000); // Durée de l'animation (2 secondes)
+      setTimeout(() => setLoading(false), 2000);
     }
   }, [addToCartModalVisible]);
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  if (!fontsLoaded) return null;
+
+  const renderRadioOption = (label, value) => (
+    <TouchableOpacity
+      style={styles.filterOption}
+      onPress={() => {
+        setFilterAlcohol(value);
+        setFilterModalVisible(false);
+      }}
+    >
+      <View style={styles.radioRow}>
+        <View style={styles.radioOuter}>
+          {filterAlcohol === value && <View style={styles.radioInner} />}
+        </View>
+        <Text style={[
+          styles.filterOptionText,
+          filterAlcohol === value && styles.filterOptionTextSelected
+        ]}>
+          {label}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
-    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         <TouchableOpacity onPress={handleSearch}>
           <Image source={require('../assets/searchicon.png')} style={styles.searchIcon} />
         </TouchableOpacity>
-
         <TextInput
           style={styles.input}
           placeholder="Search for a drink"
@@ -142,29 +149,23 @@ const Searchbar = () => {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-
-        <TouchableOpacity onPress={handleSearch}>
+        <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
           <Image source={require('../assets/filter.png')} style={styles.filterIcon} />
         </TouchableOpacity>
 
-        {/* Modal pour afficher les boissons filtrées */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
+        {/* Résultats */}
+        <Modal animationType="fade" transparent visible={modalVisible}>
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <FlatList
                 data={filteredDrinks}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={item => item.id.toString()}
                 renderItem={({ item }) => (
                   <TouchableOpacity onPress={() => openDrinkDetails(item)}>
                     <View style={styles.drinkItem}>
                       <Text style={styles.drinkName}>{item.name}</Text>
-                      <Text style={styles.drinkIngredients}>Ingredients : {item.ingredients}</Text>
-                      <Text style={styles.drinkPrice}>Price : {item.unit_price}$</Text>
+                      <Text style={styles.drinkIngredients}>Ingredients: {item.ingredients}</Text>
+                      <Text style={styles.drinkPrice}>Price: {item.unit_price}$</Text>
                     </View>
                   </TouchableOpacity>
                 )}
@@ -176,21 +177,31 @@ const Searchbar = () => {
           </View>
         </Modal>
 
-        {/* Seconde modale pour afficher les détails de la boisson sélectionnée */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={drinkDetailModalVisible}
-          onRequestClose={() => setDrinkDetailModalVisible(false)}
-        >
+        {/* Filtre */}
+        <Modal animationType="fade" transparent visible={filterModalVisible}>
+          <TouchableWithoutFeedback onPress={() => setFilterModalVisible(false)}>
+            <View style={styles.modalContainer}>
+              <TouchableWithoutFeedback>
+                <View style={styles.filterContent}>
+                  <Text style={styles.filterTitle}>Filter drinks</Text>
+                  {renderRadioOption('With alcohol', true)}
+                  {renderRadioOption('Without alcohol', false)}
+                  {renderRadioOption("Doesn't matter", null)}
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
+        {/* Détail boisson */}
+        <Modal animationType="fade" transparent visible={drinkDetailModalVisible}>
           <View style={styles.modalContainer}>
             <View style={styles.modalDetailContent}>
               {selectedDrink && (
                 <>
                   <Text style={styles.modalTitle}>{selectedDrink.name}</Text>
-                  <Text style={styles.modalText}>Ingredients : {selectedDrink.ingredients}</Text>
-                  <Text style={styles.modalText}>Price : {selectedDrink.unit_price}$</Text>
-
+                  <Text style={styles.modalText}>Ingredients: {selectedDrink.ingredients}</Text>
+                  <Text style={styles.modalText}>Price: {selectedDrink.unit_price}$</Text>
                   <TouchableOpacity onPress={() => addToCart(selectedDrink.id)} style={styles.button}>
                     <Svg height="50" width="200" viewBox="0 0 200 50">
                       <Defs>
@@ -203,8 +214,10 @@ const Searchbar = () => {
                     </Svg>
                     <Text style={styles.buttonText}>ADD TO CART</Text>
                   </TouchableOpacity>
-
-                  <TouchableOpacity onPress={() => setDrinkDetailModalVisible(false)} style={styles.closeButton}>
+                  <TouchableOpacity
+                    onPress={() => setDrinkDetailModalVisible(false)}
+                    style={styles.closeButton}
+                  >
                     <Text style={styles.closeButtonText}>Close</Text>
                   </TouchableOpacity>
                 </>
@@ -213,20 +226,14 @@ const Searchbar = () => {
           </View>
         </Modal>
 
-        {/* Modal pour afficher que la boisson a bien été ajoutée au panier */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={addToCartModalVisible}
-          onRequestClose={() => setAddToCartModalVisible(false)}
-        >
+        {/* Confirmation ajout */}
+        <Modal animationType="fade" transparent visible={addToCartModalVisible}>
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              {loading ? (
-                <ActivityIndicator size="large" color="#30A0BD" />  // Afficher une animation de chargement
-              ) : (
-                <Text style={styles.modalTitle}>Drink added successfully!</Text> // Afficher le texte après l'animation
-              )}
+              {loading
+                ? <ActivityIndicator size="large" color="#30A0BD" />
+                : <Text style={styles.modalTitle}>Drink added successfully!</Text>
+              }
               <TouchableOpacity onPress={() => setAddToCartModalVisible(false)} style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
@@ -242,105 +249,124 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     backgroundColor: '#E2E2E2',
-    width: 287,
+    width: 320,
     borderRadius: 20,
     height: 40,
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     marginLeft: 27,
     marginTop: 20
   },
-  searchIcon: {
-    width: 25,
-    height: 25,
-  },
-  filterIcon: {
-    width: 25,
-    height: 25,
-  },
+  searchIcon: { width: 24, height: 24 },
+  filterIcon: { width: 24, height: 24, marginLeft: 8 },
   input: {
     flex: 1,
-    color: '#929292',
-    fontFamily: 'Roboto-Regular',
-    fontSize: 18,
-    paddingLeft: 7,
-    height: '100%',
+    color: '#333',
+    fontSize: 16,
+    paddingLeft: 8,
   },
   modalContainer: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     width: '80%',
-    backgroundColor: 'white',
-    padding: 20,
+    backgroundColor: '#FFF',
     borderRadius: 10,
+    padding: 16,
+    elevation: 8,
   },
-  modalDetailContent: {
-    width: '80%',
-    backgroundColor: 'white',
+  closeButton: {
+    marginTop: 12,
+    backgroundColor: '#DDD',
+    paddingVertical: 8,
+    borderRadius: 6,
+    width: '100%'
+  },
+  closeButtonText: {
+    textAlign: 'center',
+    color: '#333',
+    fontSize: 16,
+  },
+  filterContent: {
+    width: 260,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
     padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
+    alignItems: 'stretch',
+    elevation: 10,
   },
-  drinkItem: {
-    padding: 10,
+  filterTitle: {
     fontSize: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  drinkName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  drinkIngredients: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 5,
-  },
-  drinkPrice: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 5,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    alignSelf: 'center',
-  },
-  modalText: {
-    fontSize: 18,
-    marginBottom: 10,
+    fontWeight: '600',
+    marginBottom: 12,
     textAlign: 'center',
   },
-  button: {
-    width: 200,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-    borderRadius: 10,
+  filterOption: {
+    marginVertical: 6,
+  },
+  radioRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#30A0BD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#30A0BD',
+  },
+  filterOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  filterOptionTextSelected: {
+    fontWeight: 'bold',
+    color: '#30A0BD',
+  },
+  drinkItem: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
+  drinkName: { fontSize: 16, fontWeight: '600' },
+  drinkIngredients: { fontSize: 14, color: '#666', marginTop: 4 },
+  drinkPrice: { fontSize: 14, color: '#666', marginTop: 4 },
+  modalDetailContent: {
+    width: '80%',
+    backgroundColor: '#FFF',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    elevation: 8,
+  },
+  modalTitle: { fontSize: 18, fontWeight: '600', marginBottom: 8 },
+  modalText: { fontSize: 14, textAlign: 'center', marginBottom: 8 },
+  button: {
+    marginTop: 12,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
     position: 'absolute',
-  },
-  closeButton: {
-    backgroundColor: '#E2E2E2',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  closeButtonText: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#000',
+    fontWeight: '600',
+    color: '#FFF',
+    left: 40,
+    top: 13
   },
 });
 

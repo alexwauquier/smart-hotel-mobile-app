@@ -27,7 +27,7 @@ const CameraScreen = () => {
 
     setTimeout(() => {
       setLoading(false);
-      navigation.navigate('Home');
+      navigation.navigate('ShippingResume');
     }, 2000);
   };
 
