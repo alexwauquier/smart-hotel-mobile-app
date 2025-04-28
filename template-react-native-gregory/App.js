@@ -15,6 +15,10 @@ import ShippingResume from './components/ShippingResume';
 import ShippingComplet from './components/ShippingComplet';
 import CreateOrder from './components/CreateOrder';
 
+import HomeEmployeeView from './components/HomeEmployeeView';
+import EmployeeLoginView from './components/EmployeeLoginView';
+import ProcessOrder from './components/ProcessOrder';
+
 
 const Stack = createStackNavigator();
 
@@ -34,6 +38,10 @@ const App = () => {
         <Stack.Screen name="ShippingResume" component={ShippingResume} />
         <Stack.Screen name="ShippingComplet" component={ShippingComplet} />
         <Stack.Screen name="CreateOrder" component={CreateOrder} />
+
+        <Stack.Screen name="EmployeeLoginView" component={EmployeeLoginView} />
+        <Stack.Screen name="HomeEmployeeView" component={HomeEmployeeView} />
+        <Stack.Screen name="ProcessOrder" component={ProcessOrder} />
 
 
       </Stack.Navigator>

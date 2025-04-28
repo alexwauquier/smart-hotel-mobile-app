@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppHeader from './AppHeader';
 import AppNavbar from './AppNavbar';
 import { useNavigation } from '@react-navigation/native';
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 const fetchDrinkById = async (id) => {
   try {
@@ -30,6 +32,9 @@ const CartView = () => {
   const navigation = useNavigation();
   const [cartItems, setCartItems] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language);
+
 
   const loadCart = async () => {
     const storedCart = await AsyncStorage.getItem('cart');
@@ -86,13 +91,14 @@ const CartView = () => {
     setModalVisible(false); // Fermer la modal sans rien faire
   };
 
+  const imageSource = language == 'fr' ? require('../assets/validate_fr.png') : require('../assets/validate.png');
   return (
     <View style={styles.container}>
       <AppHeader />
-      <Text style={styles.ViewTitle}>YOUR CART</Text>
+      <Text style={styles.ViewTitle}>{t('your_cart')}</Text>
 
       {cartItems.length === 0 ? (
-        <Text style={styles.emptyCartMessage}>Your cart is empty ! 😔</Text>
+        <Text style={styles.emptyCartMessage}>{t('cart_empty')}</Text>
       ) : (
         <FlatList
           style={styles.FlatListCart}
@@ -121,7 +127,7 @@ const CartView = () => {
 
       <View style={styles.ButtonLine}>
         <TouchableOpacity onPress={() => navigation.navigate('ShippingAdvert')}>
-          <Image source={require('../assets/validate.png')} style={styles.buttonValidate} />
+          <Image source={imageSource} style={styles.buttonValidate} />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleDeleteCart}>
           <Image source={require('../assets/trash.png')} style={styles.trashIcon} />
@@ -136,13 +142,13 @@ const CartView = () => {
         onRequestClose={cancelDeleteCart}>
         <View style={styles.modalBackground}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Are you sure you want to delete your cart?</Text>
+            <Text style={styles.modalText}>{t('delete_cart')}</Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity style={styles.modalButton} onPress={confirmDeleteCart}>
-                <Text style={styles.modalButtonText}>Yes</Text>
+                <Text style={styles.modalButtonText}>{t('confirm')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalButton} onPress={cancelDeleteCart}>
-                <Text style={styles.modalButtonText}>No</Text>
+                <Text style={styles.modalButtonText}>{t('confirm_not')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -260,6 +266,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Averia-Serif-Libre-Regular',
     marginBottom: 20,
+    textAlign: 'center',
   },
   modalButtons: {
     flexDirection: 'row',

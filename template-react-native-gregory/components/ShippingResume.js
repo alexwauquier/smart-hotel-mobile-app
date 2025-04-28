@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppHeader from './AppHeader';
 import AppNavbar from './AppNavbar';
 import { useNavigation } from '@react-navigation/native';
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 const fetchDrinkById = async (id) => {
   try {
@@ -27,6 +29,8 @@ const ShippingResume = () => {
   const navigation = useNavigation();
   const [cartItems, setCartItems] = useState([]);
   const [userName, setUserName] = useState('');
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language);
 
   const loadCart = async () => {
     const storedCart = await AsyncStorage.getItem('cart');
@@ -77,6 +81,7 @@ const ShippingResume = () => {
   }, []);
 
   const total = cartItems.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
+  const imageSource = language == 'fr' ? require('../assets/validate_order_fr.png') : require('../assets/validate_order.png');
 
   return (
     <View style={styles.container}>
@@ -87,7 +92,7 @@ const ShippingResume = () => {
           style={styles.image}
         />
       </TouchableOpacity>
-      <Text style={styles.ViewTitle}>RESUME</Text>
+      <Text style={styles.ViewTitle}>{t('resume')}</Text>
 
       <FlatList
         style={styles.FlatListCart}
@@ -105,15 +110,15 @@ const ShippingResume = () => {
       />
 
       <Text style={styles.TotalText}>TOTAL : {total.toFixed(2)}€</Text>
-      <Text style={styles.NameText}>Name : {userName} </Text>
+      <Text style={styles.NameText}>{t('name')} : {userName} </Text>
 
       <TouchableOpacity onPress={() => navigation.navigate('CreateOrder')}>
         <Image
-          source={require('../assets/validate_order.png')}
+          source={imageSource}
           style={styles.button}
         />
       </TouchableOpacity>
-      <Text style={styles.charges}>The amount to be paid will be added to your room charges to be settled upon check-out.</Text>
+      <Text style={styles.charges}>{t('charges')}</Text>
     </View>
   );
 };
@@ -155,7 +160,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: 'Averia-Serif-Libre-Regular',
     marginRight: 5,
-    width: 150,
+    width: 250,
   },
   drinkPrice: {
     fontSize: 24,

@@ -6,11 +6,21 @@ import moment from 'moment/moment';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import AppHeader from './AppHeader';
 import AppNavbar from './AppNavbar';
+import { Picker } from '@react-native-picker/picker';
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 const UserView = () => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const navigation = useNavigation();
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language);
+    
+      const handleLanguageChange = (lang) => {
+        i18n.changeLanguage(lang);
+        setLanguage(lang);
+      };
 
   // Récupérer l'ID de l'utilisateur depuis AsyncStorage
   useEffect(() => {
@@ -87,10 +97,10 @@ const UserView = () => {
       <AppHeader />
 
       <View style={styles.card}>
-        <Text style={styles.title}>User Informations</Text>
-        <Text style={styles.text}><Text style={styles.label}>Name :</Text> {user.lastName} {user.firstName}</Text>
-        <Text style={styles.text}><Text style={styles.label}>Arrival Date :</Text> {arrivalDate}</Text>
-        <Text style={styles.text}><Text style={styles.label}>Departure Date :</Text> {departureDate}</Text>
+        <Text style={styles.title}>{t('user_info')}</Text>
+        <Text style={styles.text}><Text style={styles.label}>{t('name')} :</Text> {user.last_name} {user.firstName}</Text>
+        <Text style={styles.text}><Text style={styles.label}>{t('arrival_date')} :</Text> {arrivalDate}</Text>
+        <Text style={styles.text}><Text style={styles.label}>{t('departure_date')} :</Text> {departureDate}</Text>
 
         {/* Bouton Logout avec dégradé */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -103,9 +113,18 @@ const UserView = () => {
             </Defs>
             <Rect x="0" y="0" width="200" height="50" fill="url(#gradient1)" rx="10" />
           </Svg>
-          <Text style={styles.logoutButtonText}>LOGOUT</Text>
+          <Text style={styles.logoutButtonText}>{t('logout')}</Text>
         </TouchableOpacity>
       </View>
+
+      <Picker
+                selectedValue={language}
+                style={styles.picker}
+                onValueChange={(itemValue) => handleLanguageChange(itemValue)}
+              >
+                <Picker.Item label="Français" value="fr" />
+                <Picker.Item label="English" value="en" />
+              </Picker>
 
       <AppNavbar />
     </View>
@@ -176,6 +195,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  picker: {
+    height: 40,
+    width: 200,
+    marginBottom: 50,
   },
 });
 

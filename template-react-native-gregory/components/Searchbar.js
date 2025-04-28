@@ -15,6 +15,8 @@ import {
 import * as Font from 'expo-font';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 const Searchbar = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -31,6 +33,9 @@ const Searchbar = () => {
   const [addToCartModalVisible, setAddToCartModalVisible] = useState(false);
   const [selectedDrink, setSelectedDrink] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language);
 
   useEffect(() => {
     Font.loadAsync({
@@ -144,7 +149,7 @@ const Searchbar = () => {
         </TouchableOpacity>
         <TextInput
           style={styles.input}
-          placeholder="Search for a drink"
+          placeholder={t('search_drink')}
           placeholderTextColor="#929292"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -165,13 +170,13 @@ const Searchbar = () => {
                     <View style={styles.drinkItem}>
                       <Text style={styles.drinkName}>{item.name}</Text>
                       <Text style={styles.drinkIngredients}>Ingredients: {item.ingredients}</Text>
-                      <Text style={styles.drinkPrice}>Price: {item.unit_price}$</Text>
+                      <Text style={styles.drinkPrice}>{t('price')}: {item.unit_price}€</Text>
                     </View>
                   </TouchableOpacity>
                 )}
               />
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>Close</Text>
+                <Text style={styles.closeButtonText}>{t('close')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -183,10 +188,10 @@ const Searchbar = () => {
             <View style={styles.modalContainer}>
               <TouchableWithoutFeedback>
                 <View style={styles.filterContent}>
-                  <Text style={styles.filterTitle}>Filter drinks</Text>
-                  {renderRadioOption('With alcohol', true)}
-                  {renderRadioOption('Without alcohol', false)}
-                  {renderRadioOption("Doesn't matter", null)}
+                  <Text style={styles.filterTitle}>{t('filter')}</Text>
+                  {renderRadioOption(t('with_alcohol'), true)}
+                  {renderRadioOption(t('without_alcohol'), false)}
+                  {renderRadioOption(t('doesnt_matter'), null)}
                 </View>
               </TouchableWithoutFeedback>
             </View>
@@ -201,24 +206,24 @@ const Searchbar = () => {
                 <>
                   <Text style={styles.modalTitle}>{selectedDrink.name}</Text>
                   <Text style={styles.modalText}>Ingredients: {selectedDrink.ingredients}</Text>
-                  <Text style={styles.modalText}>Price: {selectedDrink.unit_price}$</Text>
+                  <Text style={styles.modalText}>{t('price')}: {selectedDrink.unit_price}€</Text>
                   <TouchableOpacity onPress={() => addToCart(selectedDrink.id)} style={styles.button}>
-                    <Svg height="50" width="200" viewBox="0 0 200 50">
+                    <Svg height="50" width="240" viewBox="0 0 200 50">
                       <Defs>
                         <LinearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
                           <Stop offset="0%" stopColor="#30A0BD" />
                           <Stop offset="100%" stopColor="#2F5B77" />
                         </LinearGradient>
                       </Defs>
-                      <Rect x="0" y="0" width="200" height="50" fill="url(#gradient1)" rx="10" />
+                      <Rect x="0" y="0" width="220" height="50" fill="url(#gradient1)" rx="10" />
                     </Svg>
-                    <Text style={styles.buttonText}>ADD TO CART</Text>
+                    <Text style={styles.buttonText}>{t('add_cart')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => setDrinkDetailModalVisible(false)}
                     style={styles.closeButton}
                   >
-                    <Text style={styles.closeButtonText}>Close</Text>
+                    <Text style={styles.closeButtonText}>{t('close')}</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -232,10 +237,10 @@ const Searchbar = () => {
             <View style={styles.modalContent}>
               {loading
                 ? <ActivityIndicator size="large" color="#30A0BD" />
-                : <Text style={styles.modalTitle}>Drink added successfully!</Text>
+                : <Text style={styles.modalTitle}>{t('add_success')}</Text>
               }
               <TouchableOpacity onPress={() => setAddToCartModalVisible(false)} style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>Close</Text>
+                <Text style={styles.closeButtonText}>{t('close')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -366,7 +371,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFF',
     left: 40,
-    top: 13
+    top: 13,
+    textAlign: 'center',
   },
 });
 

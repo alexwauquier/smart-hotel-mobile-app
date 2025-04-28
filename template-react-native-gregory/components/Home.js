@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const Home = ({ navigation }) => {  
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [userId, setUserId] = useState(null);  // 🔹 Ajout d'un état pour stocker l'ID
+  
 
   useEffect(() => {
     Font.loadAsync({
@@ -40,9 +41,7 @@ const Home = ({ navigation }) => {
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
         <HomeHeader />
-        <DrinkButtons navigation={navigation} />
-        <Text style={styles.text}>{userId ? `ID: ${userId}` : 'Chargement...'}</Text> 
-        {/* 🔹 Affichage de l'ID ou "Chargement..." si non disponible */}
+        <DrinkButtons navigation={navigation} /> 
       </View>
     </TouchableWithoutFeedback>
   );

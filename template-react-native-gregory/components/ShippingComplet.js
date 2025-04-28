@@ -1,12 +1,18 @@
-import React, {} from 'react';
+import React, {useState, useEffect} from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import AppHeader from './AppHeader';
 import { useNavigation } from '@react-navigation/native';
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 
 const ShippingComplet = () => {
   const navigation = useNavigation();
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language);
 
+
+  const imageSource = language == 'fr' ? require('../assets/back_menu_fr.png') : require('../assets/back_menu.png');
   return (
     <View style={styles.container}>
       <AppHeader />
@@ -19,15 +25,15 @@ const ShippingComplet = () => {
 
 
       <Text style={styles.Text}>
-        Order created successfully ! 
+        {t('order_success1')} 
       </Text>
       <Text style={styles.Text2}>
-        The waiter will ask for your room number to ensure that you are the correct person to serve. Please make sure to provide it.
+        {t('order_success2')}
       </Text>
 
       <TouchableOpacity onPress={() => navigation.navigate('Home')}>
         <Image
-                source={require('../assets/back_menu.png')}
+                source={imageSource}
                 style={styles.button}
         />
       </TouchableOpacity>

@@ -5,10 +5,14 @@ import AppNavbar from './AppNavbar';
 import AppHeader from './AppHeader';
 import Alcohol from './Alcohol';
 import { useNavigation } from '@react-navigation/native';
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 const AlcoholView = () => {  // Ajout du prop 'navigation'
   const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language);
 
   useEffect(() => {
     Font.loadAsync({
@@ -30,7 +34,7 @@ const AlcoholView = () => {  // Ajout du prop 'navigation'
         <AppHeader />
         <Alcohol />
         <TouchableOpacity style={styles.switchButton} onPress={() => navigation.navigate('Soft')}>
-                    <Text style={styles.switchText}>SWITCH TO SOFTS</Text>
+                    <Text style={styles.switchText}>{t('switch_soft')}</Text>
                     <Image source={require('../assets/arrow_right.png')} style={styles.arrowIcon} />
         </TouchableOpacity>
         <AppNavbar />

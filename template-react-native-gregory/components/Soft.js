@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, FlatList, T
 import * as Font from 'expo-font';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';  // Assure-toi d'importer AsyncStorage
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 const SoftDrinks = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -12,6 +14,8 @@ const SoftDrinks = () => {
 
   const fadeAnim = useState(new Animated.Value(0))[0];
   const modalFadeAnim = useState(new Animated.Value(0))[0];
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language);
 
   useEffect(() => {
     Font.loadAsync({
@@ -80,6 +84,7 @@ fetchSoftDrinks();
       await AsyncStorage.setItem('cart', JSON.stringify(cart));
 
       console.log(`✅ Boisson ajoutée au panier : ID ${drinkId}`);
+      alert(t('add_success'));
       console.log("🛒 État du panier :", cart);
     } catch (error) {
       console.error('❌ Erreur lors de l\'ajout au panier:', error);
@@ -100,7 +105,7 @@ fetchSoftDrinks();
                 <TouchableOpacity onPress={() => openModal(item)} style={styles.drinkItem}>
                   <Text style={styles.drinkName}>{item.name}</Text>
                   <Text style={styles.drinkIngredients}>Ingrédients : {item.ingredients}</Text>
-                  <Text style={styles.drinkPrice}>Prix : {item.unit_price}€</Text>
+                  <Text style={styles.drinkPrice}>{t('price')} : {item.unit_price}€</Text>
                 </TouchableOpacity>
               )}
             />
@@ -113,7 +118,7 @@ fetchSoftDrinks();
                   <>
                     <Text style={styles.modalTitle}>{selectedDrink.name}</Text>
                     <Text style={styles.modalText}>Ingrédients : {selectedDrink.ingredients}</Text>
-                    <Text style={styles.modalText}>Prix : {selectedDrink.unit_price}€</Text>
+                    <Text style={styles.modalText}>{t('price')} : {selectedDrink.unit_price}€</Text>
 
                     <TouchableOpacity style={styles.button} onPress={() => addToCart(selectedDrink.id)}>
                       <Svg height="50" width="200" viewBox="0 0 200 50">
@@ -125,11 +130,11 @@ fetchSoftDrinks();
                         </Defs>
                         <Rect x="0" y="0" width="200" height="50" fill="url(#gradient1)" rx="10" />
                       </Svg>
-                      <Text style={styles.buttonText}>ADD TO CART</Text>
+                      <Text style={styles.buttonText}>{t('add_cart')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
-                      <Text style={styles.closeButtonText}>CLOSE</Text>
+                      <Text style={styles.closeButtonText}>{t('close')}</Text>
                     </TouchableOpacity>
                   </>
                 )}

@@ -4,22 +4,23 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import * as Font from 'expo-font';  
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Picker } from '@react-native-picker/picker';
 import './i18n';
 import { useTranslation } from 'react-i18next'
+import { Picker } from '@react-native-picker/picker';
 
-const LoginForm = () => {  
+const EmployeeLoginForm = () => {  
   const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [lastName, setLastName] = useState('');
-  const [spaceId, setSpaceId] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const { t, i18n } = useTranslation();
-  const [language, setLanguage] = useState(i18n.language);
-
-  const handleLanguageChange = (lang) => {
-    i18n.changeLanguage(lang);
-    setLanguage(lang);
-  };
+   const [language, setLanguage] = useState(i18n.language);
+  
+    const handleLanguageChange = (lang) => {
+      i18n.changeLanguage(lang);
+      setLanguage(lang);
+    };
+  
 
   useEffect(() => {
     Font.loadAsync({
@@ -36,22 +37,17 @@ const LoginForm = () => {
 
   const handleLogin = async () => {
     try {
-      console.log('🔹 Valeurs saisies :', { lastName, spaceId });
+      console.log('🔹 Valeurs saisies :', { username, password });
 
-      const spaceIdInt = parseInt(spaceId, 10);
-      if (isNaN(spaceIdInt)) {
-        alert('Space ID doit être un nombre valide');
-        return;
-      }
 
       const userData = {
-        last_name: lastName,
-        space_id: spaceIdInt,
+        password: password,
+        username: username,
       };
 
       console.log('📤 Données envoyées :', userData);
 
-      const response = await fetch(`https://smart-hotel-api.onrender.com/api/auth/login/customer`, {
+      const response = await fetch(`https://smart-hotel-api.onrender.com/api/auth/login/employee`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,13 +60,18 @@ const LoginForm = () => {
       const responseData = await response.json();
       console.log('✅ Données reçues :', responseData);
 
-      if (response.ok && responseData.customer) {
-        const userId = responseData.customer.id.toString();
+      if (response.ok && responseData.employee) {
+        const employeeId = responseData.employee.id.toString();
         const token = responseData.token.toString();
+        const type_employee = responseData.employee.type_id
 
-        await AsyncStorage.setItem('userId', userId);
-        await AsyncStorage.setItem('userToken', token); 
-        navigation.navigate('Home');
+        await AsyncStorage.setItem('employeeId', employeeId);
+        await AsyncStorage.setItem('employeeToken', token);  // Stocke le token
+        if (responseData.employee.type_id == "SE") {
+          navigation.navigate('HomeEmployeeView');
+        } else {
+          alert("erreur: mauvais type d'employee")
+        }
       } else {
         alert(responseData.error || 'Error: Invalid username or password');
       }
@@ -83,30 +84,25 @@ const LoginForm = () => {
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
-
-        {/* Menu déroulant de sélection de langue */}
-
-        {/* Formulaire */}
-        <Text style={styles.title}>{t('lastName')}</Text>
+        <Text style={styles.title}>{t('username')}</Text>
         <TextInput
           style={styles.input}
-          placeholder={t('lastName')}
-          value={lastName}
-          onChangeText={setLastName}
+          placeholder={t('username')}
+          value={username}
+          onChangeText={setUsername}
         />
 
-        <Text style={styles.title}>{t('roomNumber')}</Text>
+        <Text style={styles.title}>{t('password')}</Text>
         <TextInput
           style={styles.input}
-          placeholder={t('roomNumber')}
-          value={spaceId}
-          onChangeText={setSpaceId}
-          keyboardType="numeric" 
+          placeholder={t('password')}
+          value={password}
+          onChangeText={setPassword}
+           
         />
 
-        <Text style={styles.staff} onPress={() => navigation.navigate('EmployeeLoginView')}>
-          {t('staff')}
-        </Text>
+        <Text style={styles.staff} onPress={() => navigation.navigate('LoginView')}>{t('staff2')}</Text>
+
         <Picker
           selectedValue={language}
           style={styles.picker}
@@ -135,24 +131,18 @@ const LoginForm = () => {
           </Svg>
           <Text style={styles.text}>{t('login')}</Text>
         </TouchableOpacity>
-
       </View>
     </TouchableWithoutFeedback>
   );
 };
 
-// Styles
+// Styles...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-  },
-  picker: {
-    height: 40,
-    width: 200,
-    marginBottom: 50,
   },
   title: {
     fontSize: 15,
@@ -187,7 +177,12 @@ const styles = StyleSheet.create({
   staff: {
     textDecorationColor: 'black',
     textDecorationLine: "underline",
-  }
+  },
+  picker: {
+    height: 40,
+    width: 200,
+    marginBottom: 50,
+  },
 });
 
-export default LoginForm;
+export default EmployeeLoginForm;

@@ -3,12 +3,16 @@ import { Text, View, StyleSheet, Modal, ActivityIndicator } from "react-native";
 import { CameraView, Camera } from "expo-camera";
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 const CameraScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language);
 
   useEffect(() => {
     const getCameraPermissions = async () => {
@@ -58,7 +62,7 @@ const CameraScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <ActivityIndicator size="large" color="#0000ff" />
-            <Text>Chargement...</Text>
+            <Text>{t('loading')}...</Text>
           </View>
         </View>
       </Modal>

@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import * as Font from 'expo-font'; 
 import { useNavigation } from '@react-navigation/native';
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 const DrinkButtons = () => {  // Ajout de navigation en prop
   const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language);
 
   useEffect(() => {
     Font.loadAsync({
@@ -28,7 +32,7 @@ const DrinkButtons = () => {  // Ajout de navigation en prop
           source={require('../assets/alcohol_icon.png')} 
           style={styles.icon} 
         />
-        <Text style={styles.text}>ALCOHOL</Text>
+        <Text style={styles.text}>{t('alcohol')}</Text>
       </TouchableOpacity>
 
       {/* Section SOFT */}
@@ -37,7 +41,7 @@ const DrinkButtons = () => {  // Ajout de navigation en prop
           source={require('../assets/soft_icon.png')} 
           style={styles.icon} 
         />
-        <Text style={styles.text}>SOFT</Text>
+        <Text style={styles.text}>{t('soft')}</Text>
       </TouchableOpacity>
     </View>
   );

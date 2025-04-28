@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Modal } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import Searchbar from './Searchbar';
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 const fetchDrinkById = async (id) => {
   const userToken = await AsyncStorage.getItem('userToken');
@@ -39,6 +41,8 @@ const HomeHeader = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [tokenLoaded, setTokenLoaded] = useState(false);
   const navigation = useNavigation();
+  const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language);
 
   useEffect(() => {
     const checkTokenAndFetchCart = async () => {
@@ -94,7 +98,7 @@ const HomeHeader = () => {
       <Modal animationType="fade" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Your Cart</Text>
+            <Text style={styles.modalTitle}>{t('your_cart')}</Text>
 
             <FlatList
               data={cartDetails}
@@ -103,20 +107,20 @@ const HomeHeader = () => {
                 <View style={styles.cartItem}>
                   <Text style={styles.cartItemName}>{item.name}</Text>
                   <Text style={styles.cartItemDetails}>
-                    {item.quantity} x {item.unit_price}$ = {item.totalPrice.toFixed(2)}$
+                    {item.quantity} x {item.unit_price}€ = {item.totalPrice.toFixed(2)}€
                   </Text>
                 </View>
               )}
             />
 
-            <Text style={styles.totalPrice}>Total: {totalPrice.toFixed(2)}$</Text>
+            <Text style={styles.totalPrice}>Total: {totalPrice.toFixed(2)}€</Text>
 
             <TouchableOpacity onPress={() => {setModalVisible(false); navigation.navigate('ShippingAdvert') }} style={styles.ValidateButton}>
-              <Text style={styles.buttonText}>Validate Cart</Text>
+              <Text style={styles.buttonText}>{t('validate_cart')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
-              <Text style={styles.buttonText}>Close</Text>
+              <Text style={styles.buttonText}>{t('close')}</Text>
             </TouchableOpacity>
           </View>
         </View>

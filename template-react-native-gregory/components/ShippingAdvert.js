@@ -4,11 +4,16 @@ import { useNavigation } from '@react-navigation/native';
 import * as Font from 'expo-font';
 import AppHeader from "./AppHeader";
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import './i18n';
+import { useTranslation } from 'react-i18next'
 
 
 const ShippingAdvert = () => {
     const navigation = useNavigation();
     const [fontsLoaded, setFontsLoaded] = useState(false);
+    const { t, i18n } = useTranslation();
+    const [language, setLanguage] = useState(i18n.language);
+    
     
       useEffect(() => {
         Font.loadAsync({
@@ -35,10 +40,10 @@ const ShippingAdvert = () => {
 
         <View style={styles.advert}>
             <Text style={styles.text1}>
-                You will need to scan a QR code to locate the place where you will receive your order.
+                {t('shipping1')}
             </Text>
             <Text style={styles.text2}>
-                Please ensure that you do not move too far after scanning the QR code to facilitate the reception of your order.
+                {t('shipping2')}
             </Text>
         </View>
 
@@ -59,7 +64,7 @@ const ShippingAdvert = () => {
                       rx="0"
                 />
             </Svg>
-            <Text style={styles.text}>SCAN QR CODE</Text>
+            <Text style={styles.text}>{t('scan')}</Text>
         </TouchableOpacity>
     </View>
   );
