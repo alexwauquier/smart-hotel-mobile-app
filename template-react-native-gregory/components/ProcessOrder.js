@@ -14,6 +14,9 @@ import {
 import * as Font from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Vibration } from 'react-native';
+import { Audio } from 'expo-av';
+
 import AppHeader from './AppHeader';
 
 const ProcessOrder = () => {
@@ -27,6 +30,14 @@ const ProcessOrder = () => {
   const [isWaiting, setIsWaiting] = useState(false);
   const intervalRef = useRef(null);
   const navigation = useNavigation();
+
+  const playNotificationSound = async () => {
+    const { sound } = await Audio.Sound.createAsync(
+      require('../assets/notification.mp3') // mets ton propre fichier ici
+    );
+    await sound.playAsync();
+  };
+  
 
   useEffect(() => {
     Font.loadAsync({
@@ -82,6 +93,8 @@ const ProcessOrder = () => {
           setIsWaiting(false);
           const firstOrder = data[0];
           setOrder(firstOrder);
+          Vibration.vibrate(500);
+          playNotificationSound();
           fetchCustomerName(firstOrder.customer_id, employeeToken);
           fetchSpaceName(firstOrder.space_id, employeeToken);
         }
@@ -94,7 +107,7 @@ const ProcessOrder = () => {
   const cancelPolling = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     setIsWaiting(false);
-    navigation.navigate('Accueil');
+    navigation.navigate('HomeEmployeeView');
   };
 
   useEffect(() => {
