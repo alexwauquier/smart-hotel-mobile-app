@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,6 +9,7 @@ import {
   TextInput,
   Modal,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import * as Font from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
@@ -23,6 +24,8 @@ const ProcessOrder = () => {
   const [order, setOrder] = useState(null);
   const [customerName, setCustomerName] = useState('');
   const [spaceName, setSpaceName] = useState('');
+  const [isWaiting, setIsWaiting] = useState(false);
+  const intervalRef = useRef(null);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -37,32 +40,68 @@ const ProcessOrder = () => {
   const fetchOrder = async () => {
     try {
       const employeeToken = await AsyncStorage.getItem('employeeToken');
-      const response = await fetch('https://smart-hotel-api.onrender.com/api/orders?limit=1&status_id=RE', {
+      const res = await fetch(`https://smart-hotel-api.onrender.com/api/orders?limit=1&status_id=RE`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${employeeToken}`,
         },
       });
-      const data = await response.json();
-      if (data.length > 0) {
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        setIsWaiting(true);
+        startPolling();
+      } else {
         const firstOrder = data[0];
         setOrder(firstOrder);
         fetchCustomerName(firstOrder.customer_id, employeeToken);
         fetchSpaceName(firstOrder.space_id, employeeToken);
-      } else {
-        setOrder(null);
-        setCustomerName('');
-        setSpaceName('');
       }
     } catch (error) {
       console.error('Erreur lors de la récupération de la commande:', error);
-      Alert.alert('Erreur lors de la récupération de la commande');
+      Alert.alert('Erreur de connexion');
     }
+  };
+
+  const startPolling = () => {
+    intervalRef.current = setInterval(async () => {
+      try {
+        const employeeToken = await AsyncStorage.getItem('employeeToken');
+        const res = await fetch(`https://smart-hotel-api.onrender.com/api/orders?limit=1&status_id=RE`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${employeeToken}`,
+          },
+        });
+        const data = await res.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          clearInterval(intervalRef.current);
+          setIsWaiting(false);
+          const firstOrder = data[0];
+          setOrder(firstOrder);
+          fetchCustomerName(firstOrder.customer_id, employeeToken);
+          fetchSpaceName(firstOrder.space_id, employeeToken);
+        }
+      } catch (error) {
+        console.error('Erreur de polling:', error);
+      }
+    }, 10000);
+  };
+
+  const cancelPolling = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setIsWaiting(false);
+    navigation.navigate('Accueil');
   };
 
   useEffect(() => {
     fetchOrder();
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, []);
 
   const fetchCustomerName = async (customerId, token) => {
@@ -78,7 +117,6 @@ const ProcessOrder = () => {
       if (data && data.last_name) {
         setCustomerName(data.last_name);
         setCustomerRoomNumber(data.space_id?.toString() || '');
-        console.log(customerRoomNumber);
       } else {
         setCustomerName('Nom inconnu');
       }
@@ -124,7 +162,7 @@ const ProcessOrder = () => {
 
         Alert.alert('Commande livrée');
         setModalVisible(false);
-        fetchOrder();
+        navigation.navigate('AfterProcessView');
       } catch (error) {
         console.error("Erreur lors de la mise à jour du statut :", error);
         Alert.alert("Échec de la mise à jour de la commande");
@@ -142,7 +180,15 @@ const ProcessOrder = () => {
       <View style={styles.container}>
         <AppHeader />
         <View style={styles.content}>
-          {order ? (
+          {isWaiting ? (
+            <>
+              <ActivityIndicator size="large" color="#30A0BD" />
+              <Text style={styles.noOrderText}>En attente d'une commande prête...</Text>
+              <TouchableOpacity style={styles.cancelButton} onPress={cancelPolling}>
+                <Text style={styles.cancelButtonText}>Annuler</Text>
+              </TouchableOpacity>
+            </>
+          ) : order ? (
             <View style={styles.orderSummary}>
               <Text style={styles.orderTitle}>Résumé de la commande</Text>
               <View style={styles.orderDetail}>
@@ -161,14 +207,13 @@ const ProcessOrder = () => {
                 <Text style={styles.label}>Commande n° :</Text>
                 <Text style={styles.value}>{order.id}</Text>
               </View>
+              <TouchableOpacity style={styles.Button} onPress={() => setModalVisible(true)}>
+                <Text style={styles.buttonText}>COMPLET ORDER</Text>
+              </TouchableOpacity>
             </View>
           ) : (
-            <Text style={styles.noOrderText}>Aucune commande prête</Text>
+            <Text style={styles.noOrderText}>Chargement...</Text>
           )}
-
-          <TouchableOpacity style={styles.Button} onPress={() => setModalVisible(true)}>
-            <Text style={styles.buttonText}>COMPLET ORDER</Text>
-          </TouchableOpacity>
         </View>
 
         <Modal
@@ -218,10 +263,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 10,
     alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
     elevation: 5,
   },
   buttonText: {
@@ -230,14 +271,21 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
   },
+  cancelButton: {
+    marginTop: 20,
+    backgroundColor: '#ccc',
+    padding: 15,
+    borderRadius: 8,
+    alignSelf: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: '#333',
+  },
   orderSummary: {
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 3,
   },
   orderTitle: {
@@ -262,9 +310,9 @@ const styles = StyleSheet.create({
   },
   noOrderText: {
     textAlign: 'center',
-    marginTop: 50,
+    marginTop: 30,
     fontSize: 18,
-    color: '#888',
+    color: '#666',
   },
   modalContainer: {
     flex: 1,
@@ -278,10 +326,6 @@ const styles = StyleSheet.create({
     padding: 25,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
     elevation: 5,
   },
   modalTitle: {

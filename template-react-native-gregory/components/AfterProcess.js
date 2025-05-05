@@ -4,10 +4,9 @@ import * as Font from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
-const HomeEmployeeBody = () => {
+const AfterProcess = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const navigation = useNavigation();
-
 
   const handleLogout = async () => {
     try {
@@ -25,9 +24,7 @@ const HomeEmployeeBody = () => {
       'Roboto-Regular': require('../assets/fonts/Roboto-Regular.ttf'),
       'Roboto-Condensed-SemiBold': require('../assets/fonts/Roboto_Condensed-SemiBold.ttf')
     }).then(() => setFontsLoaded(true));
-  }, 
-  
-  []);
+  }, []);
 
   if (!fontsLoaded) return null;
 
@@ -35,8 +32,11 @@ const HomeEmployeeBody = () => {
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
         <View style={styles.content}>
-          <TouchableOpacity style={styles.mainButton} onPress={() => navigation.navigate('ProcessOrder')}>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ProcessOrder')}>
             <Text style={styles.buttonText}>Process a new order</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('HomeEmployeeView')}>
+            <Text style={styles.buttonText}>Back to Main Menu</Text>
           </TouchableOpacity>
         </View>
 
@@ -60,10 +60,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 30,
   },
-  mainButton: {
+  button: {
     width: 260,
-    height: 160,
+    height: 140,
     backgroundColor: '#F1F1F1',
     borderRadius: 20,
     justifyContent: 'center',
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontFamily: 'Averia-Serif-Libre-Regular',
-    fontSize: 30,
+    fontSize: 26,
     color: '#333',
     textAlign: 'center',
   },
@@ -94,4 +95,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeEmployeeBody;
+export default AfterProcess;

@@ -18,6 +18,7 @@ import CreateOrder from './components/CreateOrder';
 import HomeEmployeeView from './components/HomeEmployeeView';
 import EmployeeLoginView from './components/EmployeeLoginView';
 import ProcessOrder from './components/ProcessOrder';
+import AfterProcessView from './components/AfterProcessView';
 
 
 const Stack = createStackNavigator();
@@ -42,6 +43,7 @@ const App = () => {
         <Stack.Screen name="EmployeeLoginView" component={EmployeeLoginView} />
         <Stack.Screen name="HomeEmployeeView" component={HomeEmployeeView} />
         <Stack.Screen name="ProcessOrder" component={ProcessOrder} />
+        <Stack.Screen name="AfterProcessView" component={AfterProcessView} />
 
 
       </Stack.Navigator>
