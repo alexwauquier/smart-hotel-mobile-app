@@ -20,6 +20,7 @@ const fetchDrinkById = async (id) => {
     });
 
     const data = await response.json();
+    console.log("data du fetchId", data);
     return data;
   } catch (error) {
     console.error("Erreur lors de la récupération de la boisson :", error);
@@ -43,7 +44,8 @@ const CartView = () => {
       const drinks = await Promise.all(
         cartData.map(async (item) => {
           const drink = await fetchDrinkById(item.id);
-          return drink ? { ...drink, quantity: item.quantity } : null;
+          console.log(drink.data.product);
+          return drink.data.product ? { ...drink.data.product, quantity: item.quantity } : null;
         })
       );
       setCartItems(drinks.filter(item => item !== null));
@@ -57,6 +59,7 @@ const CartView = () => {
   }, []);
 
   const updateQuantity = async (id, operation) => {
+    console.log("panier:",cartItems);
     const updatedCart = cartItems.map(item => {
       if (item.id === id) {
         const newQuantity = operation === 'increase' ? item.quantity + 1 : item.quantity - 1;

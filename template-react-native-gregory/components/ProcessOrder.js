@@ -33,11 +33,10 @@ const ProcessOrder = () => {
 
   const playNotificationSound = async () => {
     const { sound } = await Audio.Sound.createAsync(
-      require('../assets/notification.mp3') // mets ton propre fichier ici
+      require('../assets/notification.mp3')
     );
     await sound.playAsync();
   };
-  
 
   useEffect(() => {
     Font.loadAsync({
@@ -48,26 +47,60 @@ const ProcessOrder = () => {
     }).then(() => setFontsLoaded(true));
   }, []);
 
+  const updateEmployee = async (orderId) => {
+    try {
+      const employeeToken = await AsyncStorage.getItem('employeeToken');
+      const employeeId    = await AsyncStorage.getItem('employeeId');
+
+      const res = await fetch(
+        `https://smart-hotel-api.onrender.com/api/orders/${orderId}/employee`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${employeeToken}`,
+          },
+          body: JSON.stringify({ employee_id: employeeId }),
+        }
+      );
+      const data2 = await res.json();
+    } catch (error) {
+      console.error('Erreur lors de la maj de l\'employee de commande', error);
+    }
+  };
+
   const fetchOrder = async () => {
     try {
       const employeeToken = await AsyncStorage.getItem('employeeToken');
-      const res = await fetch(`https://smart-hotel-api.onrender.com/api/orders?limit=1&status_id=RE`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${employeeToken}`,
-        },
-      });
+      const res = await fetch(
+        `https://smart-hotel-api.onrender.com/api/orders?limit=1&status_id=RE&employee_id=null`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${employeeToken}`,
+          },
+        }
+      );
       const data = await res.json();
 
-      if (!Array.isArray(data) || data.length === 0) {
+      if (data.success === false) {
         setIsWaiting(true);
         startPolling();
-      } else {
-        const firstOrder = data[0];
+      } else if (Array.isArray(data.data.orders) && data.data.orders.length > 0) {
+        const firstOrder = data.data.orders[0];
+
         setOrder(firstOrder);
-        fetchCustomerName(firstOrder.customer_id, employeeToken);
-        fetchSpaceName(firstOrder.space_id, employeeToken);
+        // tout de suite après, on patch l'employee
+        updateEmployee(firstOrder.id);
+
+        setCustomerName(firstOrder.customer.first_name);
+        setSpaceName(firstOrder.space.name);
+        setCustomerRoomNumber(firstOrder.customer.space_id);
+        setIsWaiting(false);
+      } else {
+        setIsWaiting(true);
+        startPolling();
       }
     } catch (error) {
       console.error('Erreur lors de la récupération de la commande:', error);
@@ -79,24 +112,37 @@ const ProcessOrder = () => {
     intervalRef.current = setInterval(async () => {
       try {
         const employeeToken = await AsyncStorage.getItem('employeeToken');
-        const res = await fetch(`https://smart-hotel-api.onrender.com/api/orders?limit=1&status_id=RE`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${employeeToken}`,
-          },
-        });
+        const res = await fetch(
+          `https://smart-hotel-api.onrender.com/api/orders?limit=1&status_id=RE&employee_id=null`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${employeeToken}`,
+            },
+          }
+        );
         const data = await res.json();
 
-        if (Array.isArray(data) && data.length > 0) {
+        if (data.success === false) {
+          setIsWaiting(true);
+          return;
+        }
+
+        if (Array.isArray(data.data.orders) && data.data.orders.length > 0) {
           clearInterval(intervalRef.current);
           setIsWaiting(false);
-          const firstOrder = data[0];
+          const firstOrder = data.data.orders[0];
+
           setOrder(firstOrder);
+          // patch après setOrder
+          updateEmployee(firstOrder.id);
+
           Vibration.vibrate(500);
           playNotificationSound();
-          fetchCustomerName(firstOrder.customer_id, employeeToken);
-          fetchSpaceName(firstOrder.space_id, employeeToken);
+          setCustomerName(firstOrder.customer.first_name);
+          setSpaceName(firstOrder.space.name);
+          setCustomerRoomNumber(firstOrder.customer.space_id);
         }
       } catch (error) {
         console.error('Erreur de polling:', error);
@@ -117,68 +163,34 @@ const ProcessOrder = () => {
     };
   }, []);
 
-  const fetchCustomerName = async (customerId, token) => {
-    try {
-      const response = await fetch(`https://smart-hotel-api.onrender.com/api/customers/${customerId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      if (data && data.last_name) {
-        setCustomerName(data.last_name);
-        setCustomerRoomNumber(data.space_id?.toString() || '');
-      } else {
-        setCustomerName('Nom inconnu');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération du client:', error);
-      setCustomerName('Erreur');
-    }
-  };
-
-  const fetchSpaceName = async (spaceId, token) => {
-    try {
-      const response = await fetch(`https://smart-hotel-api.onrender.com/api/spaces/${spaceId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      if (data && data.name) {
-        setSpaceName(data.name);
-      } else {
-        setSpaceName('Nom inconnu');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération de l\'espace:', error);
-      setSpaceName('Erreur');
-    }
-  };
-
   const handleOrderCompletion = async () => {
-    if (roomNumber.trim() === customerRoomNumber.trim()) {
+    if (roomNumber == customerRoomNumber) {
       try {
         const employeeToken = await AsyncStorage.getItem('employeeToken');
-        await fetch(`https://smart-hotel-api.onrender.com/api/orders/${order.id}/status`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${employeeToken}`,
-          },
-          body: JSON.stringify({ status: 'SE' }),
-        });
+        const response = await fetch(
+          `https://smart-hotel-api.onrender.com/api/orders/${order.id}/status`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${employeeToken}`,
+            },
+            body: JSON.stringify({ status_id: 'SE' }),
+          }
+        );
+
+
+        if (!response.ok) {
+          Alert.alert('Échec de la mise à jour de la commande');
+          return;
+        }
 
         Alert.alert('Commande livrée');
         setModalVisible(false);
         navigation.navigate('AfterProcessView');
       } catch (error) {
-        console.error("Erreur lors de la mise à jour du statut :", error);
-        Alert.alert("Échec de la mise à jour de la commande");
+        console.error('Erreur lors de la mise à jour du statut :', error);
+        Alert.alert('Échec de la mise à jour de la commande');
       }
     } else {
       Alert.alert('Mauvaise personne');
@@ -196,8 +208,13 @@ const ProcessOrder = () => {
           {isWaiting ? (
             <>
               <ActivityIndicator size="large" color="#30A0BD" />
-              <Text style={styles.noOrderText}>En attente d'une commande prête...</Text>
-              <TouchableOpacity style={styles.cancelButton} onPress={cancelPolling}>
+              <Text style={styles.noOrderText}>
+                En attente d'une commande prête...
+              </Text>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={cancelPolling}
+              >
                 <Text style={styles.cancelButtonText}>Annuler</Text>
               </TouchableOpacity>
             </>
@@ -210,17 +227,24 @@ const ProcessOrder = () => {
               </View>
               <View style={styles.orderDetail}>
                 <Text style={styles.label}>Lieu :</Text>
-                <Text style={styles.value}>{spaceName}, table n°{order.space_id}</Text>
+                <Text style={styles.value}>
+                  {spaceName}, table n°{order.space.id}
+                </Text>
               </View>
               <View style={styles.orderDetail}>
                 <Text style={styles.label}>Date :</Text>
-                <Text style={styles.value}>{new Date(order.date).toLocaleString()}</Text>
+                <Text style={styles.value}>
+                  {new Date(order.date).toLocaleString()}
+                </Text>
               </View>
               <View style={styles.orderDetail}>
                 <Text style={styles.label}>Commande n° :</Text>
                 <Text style={styles.value}>{order.id}</Text>
               </View>
-              <TouchableOpacity style={styles.Button} onPress={() => setModalVisible(true)}>
+              <TouchableOpacity
+                style={styles.Button}
+                onPress={() => setModalVisible(true)}
+              >
                 <Text style={styles.buttonText}>COMPLET ORDER</Text>
               </TouchableOpacity>
             </View>
@@ -245,10 +269,16 @@ const ProcessOrder = () => {
                 onChangeText={setRoomNumber}
                 keyboardType="numeric"
               />
-              <TouchableOpacity style={styles.submitButton} onPress={handleOrderCompletion}>
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleOrderCompletion}
+              >
                 <Text style={styles.submitButtonText}>Submit</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setModalVisible(false)}
+              >
                 <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
             </View>
@@ -330,55 +360,45 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    paddingHorizontal: 40,
   },
   modalContent: {
-    width: 320,
     backgroundColor: 'white',
-    padding: 25,
-    borderRadius: 12,
-    alignItems: 'center',
-    elevation: 5,
+    padding: 20,
+    borderRadius: 14,
+    elevation: 6,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 12,
   },
   roomInput: {
-    width: '100%',
-    height: 45,
-    borderColor: '#ccc',
     borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
     borderRadius: 8,
-    paddingHorizontal: 12,
     marginBottom: 20,
   },
   submitButton: {
-    width: '100%',
-    height: 50,
     backgroundColor: '#30A0BD',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginBottom: 10,
   },
   submitButtonText: {
     color: 'white',
     fontSize: 18,
-    fontWeight: 'bold',
+    textAlign: 'center',
   },
   closeButton: {
-    marginTop: 15,
-    backgroundColor: '#ddd',
-    padding: 10,
-    borderRadius: 8,
-    width: '100%',
-    alignItems: 'center',
+    paddingVertical: 12,
   },
   closeButtonText: {
+    color: '#30A0BD',
     fontSize: 16,
-    color: '#333',
+    textAlign: 'center',
   },
 });
 

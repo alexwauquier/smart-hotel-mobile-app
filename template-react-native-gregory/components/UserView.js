@@ -39,10 +39,10 @@ const UserView = () => {
           });
     
           const data = await response.json();
-          console.log("Data received from API:", data);
+          console.log("Data received from API:", data.data.customer);
     
           if (response.ok) {
-            setUser(data);
+            setUser(data.data.customer);
           } else {
             setError(data.error || 'Erreur lors de la récupération des données');
           }
@@ -89,8 +89,8 @@ const UserView = () => {
   }
 
   // Affichage de la date avec moment.js
-  const arrivalDate = moment(user.arrivalDate).format('DD-MM-YYYY HH:mm');
-  const departureDate = moment(user.departureDate).format('DD-MM-YYYY HH:mm');
+  const arrivalDate = moment(user.arrival_date).format('DD-MM-YYYY HH:mm');
+  const departureDate = moment(user.departure_date).format('DD-MM-YYYY HH:mm');
 
   return (
     <View style={styles.container}>

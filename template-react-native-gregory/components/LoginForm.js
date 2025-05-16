@@ -64,9 +64,9 @@ const LoginForm = () => {
       const responseData = await response.json();
       console.log('✅ Données reçues :', responseData);
 
-      if (response.ok && responseData.customer) {
-        const userId = responseData.customer.id.toString();
-        const token = responseData.token.toString();
+      if (response.ok && responseData.data.customer) {
+        const userId = responseData.data.customer.id.toString();
+        const token = responseData.data.token.toString();
 
         await AsyncStorage.setItem('userId', userId);
         await AsyncStorage.setItem('userToken', token); 

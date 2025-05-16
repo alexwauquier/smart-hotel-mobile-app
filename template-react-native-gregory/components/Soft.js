@@ -45,7 +45,7 @@ const SoftDrinks = () => {
     
         const data = await response.json();
     
-        const drinks = Array.isArray(data) ? data : [];
+        const drinks = Array.isArray(data.data.products) ? data.data.products : [];
         const soft = drinks.filter(drink => drink.contains_alcohol === false);
         setSoftDrinks(soft);
       } catch (error) {

@@ -60,14 +60,14 @@ const EmployeeLoginForm = () => {
       const responseData = await response.json();
       console.log('✅ Données reçues :', responseData);
 
-      if (response.ok && responseData.employee) {
-        const employeeId = responseData.employee.id.toString();
-        const token = responseData.token.toString();
-        const type_employee = responseData.employee.type_id
+      if (response.ok && responseData.data.employee) {
+        const employeeId = responseData.data.employee.id.toString();
+        const token = responseData.data.token.toString();
+      const type_employee = responseData.data.employee.type_id
 
         await AsyncStorage.setItem('employeeId', employeeId);
         await AsyncStorage.setItem('employeeToken', token);  // Stocke le token
-        if (responseData.employee.type_id == "SE") {
+        if (responseData.data.employee.type.id == "SE") {
           navigation.navigate('HomeEmployeeView');
         } else {
           alert("erreur: mauvais type d'employee")

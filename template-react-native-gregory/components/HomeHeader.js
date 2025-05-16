@@ -67,7 +67,8 @@ const HomeHeader = () => {
       const drinks = await Promise.all(
         cartArray.map(async (item) => {
           const drink = await fetchDrinkById(item.id);
-          return drink ? { ...drink, quantity: item.quantity, totalPrice: drink.unit_price * item.quantity } : null;
+
+          return drink.data.product ? { ...drink.data.product, quantity: item.quantity, totalPrice: drink.data.product.unit_price * item.quantity } : null;
         })
       );
 

@@ -45,7 +45,7 @@ const AlcoholDrinks = () => {
       })
         .then(response => response.json())
         .then(data => {
-          const drinks = data || [];
+          const drinks = data.data.products || [];
           const alcoholic = drinks.filter(drink => drink.contains_alcohol === true);
           setAlcoholDrinks(alcoholic);
         })

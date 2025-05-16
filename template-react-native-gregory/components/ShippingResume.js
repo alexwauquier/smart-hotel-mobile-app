@@ -18,7 +18,8 @@ const fetchDrinkById = async (id) => {
       },
     });
     const data = await response.json();
-    return data;
+    console.log(data.data.product);
+    return data.data.product;
   } catch (error) {
     console.error("Erreur lors de la récupération de la boisson :", error);
     return null;
@@ -53,6 +54,7 @@ const ShippingResume = () => {
       const userId = await AsyncStorage.getItem('userId');
       if (userId) {
         const userToken = await AsyncStorage.getItem('userToken');
+        console.log(userToken);
         const response = await fetch(`https://smart-hotel-api.onrender.com/api/customers/${userId}`, {
             method: 'GET',
             headers: {
@@ -60,12 +62,11 @@ const ShippingResume = () => {
               'Authorization': `Bearer ${userToken}`,
             },
           });
-          console.log(response)
-          console.log(userToken)
+          console.log(response.data)
           const data = await response.json();
           console.log(data)
         if (response.ok) {
-          setUserName(data.last_name); // adapte si c’est 'name' ou autre
+          setUserName(data.data.customer.last_name); // adapte si c’est 'name' ou autre
         } else {
           console.error('Erreur lors de la récupération du nom utilisateur');
         }

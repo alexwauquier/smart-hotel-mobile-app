@@ -52,12 +52,17 @@ const CreateOrder = () => {
           body: JSON.stringify(orderData),
         });
 
+        console.log('Response:', response);
+
         if (!response.ok) {
           const errorData = await response.json();
           console.log('Erreur API:', errorData);
           setError(`Erreur lors de la commande : ${errorData.message || 'Erreur inconnue'}`);
           return;
         }
+
+        const responseData = await response.json();
+        console.log('Réponse API:', responseData);
 
         console.log('Commande envoyée avec succès');
         await AsyncStorage.removeItem('cart');

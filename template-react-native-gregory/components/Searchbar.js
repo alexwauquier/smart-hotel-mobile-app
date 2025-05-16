@@ -57,11 +57,11 @@ const Searchbar = () => {
         },
       });
       const data = await response.json();
-      if (!Array.isArray(data)) {
+      if (!Array.isArray(data.data.products)) {
         console.error("Erreur : la réponse de l'API n'est pas un tableau.", data);
         return;
       }
-      const drinksList = data.map(drink => ({
+      const drinksList = data.data.products.map(drink => ({
         ...drink,
         nameUpper: drink.name.toUpperCase(),
         ingredientsUpper: drink.ingredients.toUpperCase(),
@@ -69,7 +69,7 @@ const Searchbar = () => {
       setDrinks(drinksList);
       setFilteredDrinks(drinksList);
     } catch (error) {
-      console.error("Erreur lors du fetch des boissons :", error);
+      console.error("Erreur lors du fetch des boissons searchbar:", error);
     }
   };
 
