@@ -150,7 +150,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: Localization.locale.split('-')[0], // Ex: "fr-FR" => "fr"
+    lng: (Localization.locale || 'en').split('-')[0], // Ex: "fr-FR" => "fr"
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false, // pas besoin d'échapper React Native
