@@ -1,1 +1,27 @@
-{ "build": { "preview": { "android": { "buildType": "apk" } } } }
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "ENV_FILE": ".env.local"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "ENV_FILE": ".env.local"
+      }
+    }
+  }
+}
