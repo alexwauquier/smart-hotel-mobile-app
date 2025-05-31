@@ -92,6 +92,8 @@ const EmployeeLoginForm = () => {
           placeholder={t('username')}
           value={username}
           onChangeText={setUsername}
+          autoCapitalize="none"
+          autoCorrect={false}
         />
 
         <Text style={styles.title}>{t('password')}</Text>
@@ -100,7 +102,9 @@ const EmployeeLoginForm = () => {
           placeholder={t('password')}
           value={password}
           onChangeText={setPassword}
-           
+          autoCapitalize="none"
+          autoCorrect={false}
+          secureTextEntry={true}
         />
 
         <Text style={styles.staff} onPress={() => navigation.navigate('LoginView')}>{t('staff2')}</Text>
