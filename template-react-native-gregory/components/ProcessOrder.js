@@ -15,9 +15,11 @@ import * as Font from 'expo-font';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Vibration } from 'react-native';
-import { Audio } from 'expo-av';
-
+import { createAudioPlayer } from 'expo-audio';
 import AppHeader from './AppHeader';
+
+const notificationSound = require('../assets/notification.mp3');
+const player = createAudioPlayer();
 
 const ProcessOrder = () => {
   const apiUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -32,13 +34,6 @@ const ProcessOrder = () => {
   const [isWaiting, setIsWaiting] = useState(false);
   const intervalRef = useRef(null);
   const navigation = useNavigation();
-
-  const playNotificationSound = async () => {
-    const { sound } = await Audio.Sound.createAsync(
-      require('../assets/notification.mp3')
-    );
-    await sound.playAsync();
-  };
 
   useEffect(() => {
     Font.loadAsync({
@@ -139,13 +134,14 @@ const ProcessOrder = () => {
           setOrder(firstOrder);
           // patch après setOrder
           updateEmployee(firstOrder.id);
-
-          Vibration.vibrate(500);
-          playNotificationSound();
           setCustomerName(firstOrder.customer.first_name);
           setSpaceName(firstOrder.space.name);
           setCustomerRoomNumber(firstOrder.customer.space_id);
         }
+
+        Vibration.vibrate(500);
+        player.replace(notificationSound);
+        player.play();
       } catch (error) {
         console.error('Erreur de polling:', error);
       }
