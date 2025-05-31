@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import moment from 'moment/moment';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import AppHeader from './AppHeader';
 import AppNavbar from './AppNavbar';
@@ -90,9 +89,21 @@ const UserView = () => {
     );
   }
 
-  // Affichage de la date avec moment.js
-  const arrivalDate = moment(user.arrival_date).format('DD-MM-YYYY HH:mm');
-  const departureDate = moment(user.departure_date).format('DD-MM-YYYY HH:mm');
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const pad = (n) => n.toString().padStart(2, '0');
+
+    const day = pad(date.getDate());
+    const month = pad(date.getMonth() + 1);
+    const year = date.getFullYear();
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
+  };
+
+  const arrivalDate = formatDate(user.arrival_date);
+  const departureDate = formatDate(user.departure_date);
 
   return (
     <View style={styles.container}>
