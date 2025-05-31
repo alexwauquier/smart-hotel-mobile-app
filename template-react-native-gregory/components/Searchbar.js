@@ -19,6 +19,8 @@ import './i18n';
 import { useTranslation } from 'react-i18next'
 
 const Searchbar = () => {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [drinks, setDrinks] = useState([]);
@@ -49,7 +51,7 @@ const Searchbar = () => {
   const fetchDrinks = async () => {
     try {
       const userToken = await AsyncStorage.getItem('userToken');
-      const response = await fetch(`https://smart-hotel-api.onrender.com/api/products`, {
+      const response = await fetch(`${apiUrl}/api/products`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

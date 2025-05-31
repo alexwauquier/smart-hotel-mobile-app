@@ -7,6 +7,8 @@ import './i18n';
 import { useTranslation } from 'react-i18next'
 
 const fetchDrinkById = async (id) => {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   const userToken = await AsyncStorage.getItem('userToken');
 
   if (!userToken) {
@@ -14,7 +16,7 @@ const fetchDrinkById = async (id) => {
   }
 
   try {
-    const response = await fetch(`https://smart-hotel-api.onrender.com/api/products/${id}`, {
+    const response = await fetch(`${apiUrl}/api/products/${id}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${userToken}`, // Correction ici

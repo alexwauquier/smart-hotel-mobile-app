@@ -11,6 +11,8 @@ import './i18n';
 import { useTranslation } from 'react-i18next'
 
 const UserView = () => {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const navigation = useNavigation();
@@ -30,7 +32,7 @@ const UserView = () => {
         const userToken = await AsyncStorage.getItem('userToken');
     
         if (userId && userToken) {
-          const response = await fetch(`https://smart-hotel-api.onrender.com/api/customers/${userId}`, {
+          const response = await fetch(`${apiUrl}/api/customers/${userId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',

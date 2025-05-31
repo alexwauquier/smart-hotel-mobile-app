@@ -20,6 +20,8 @@ import { Audio } from 'expo-av';
 import AppHeader from './AppHeader';
 
 const ProcessOrder = () => {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [roomNumber, setRoomNumber] = useState('');
@@ -53,7 +55,7 @@ const ProcessOrder = () => {
       const employeeId    = await AsyncStorage.getItem('employeeId');
 
       const res = await fetch(
-        `https://smart-hotel-api.onrender.com/api/orders/${orderId}/employee`,
+        `${apiUrl}/api/orders/${orderId}/employee`,
         {
           method: 'PATCH',
           headers: {
@@ -73,7 +75,7 @@ const ProcessOrder = () => {
     try {
       const employeeToken = await AsyncStorage.getItem('employeeToken');
       const res = await fetch(
-        `https://smart-hotel-api.onrender.com/api/orders?limit=1&status_id=RE&employee_id=null`,
+        `${apiUrl}/api/orders?limit=1&status_id=RE&employee_id=null`,
         {
           method: 'GET',
           headers: {
@@ -113,7 +115,7 @@ const ProcessOrder = () => {
       try {
         const employeeToken = await AsyncStorage.getItem('employeeToken');
         const res = await fetch(
-          `https://smart-hotel-api.onrender.com/api/orders?limit=1&status_id=RE&employee_id=null`,
+          `${apiUrl}/api/orders?limit=1&status_id=RE&employee_id=null`,
           {
             method: 'GET',
             headers: {
@@ -168,7 +170,7 @@ const ProcessOrder = () => {
       try {
         const employeeToken = await AsyncStorage.getItem('employeeToken');
         const response = await fetch(
-          `https://smart-hotel-api.onrender.com/api/orders/${order.id}/status`,
+          `${apiUrl}/api/orders/${order.id}/status`,
           {
             method: 'PATCH',
             headers: {

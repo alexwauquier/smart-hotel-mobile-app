@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next'
 import { Picker } from '@react-native-picker/picker';
 
 const EmployeeLoginForm = () => {  
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [username, setUsername] = useState('');
@@ -47,7 +49,7 @@ const EmployeeLoginForm = () => {
 
       console.log('📤 Données envoyées :', userData);
 
-      const response = await fetch(`https://smart-hotel-api.onrender.com/api/auth/login/employee`, {
+      const response = await fetch(`${apiUrl}/api/auth/login/employee`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

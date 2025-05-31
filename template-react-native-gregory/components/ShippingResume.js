@@ -8,9 +8,11 @@ import './i18n';
 import { useTranslation } from 'react-i18next'
 
 const fetchDrinkById = async (id) => {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   try {
     const userToken = await AsyncStorage.getItem('userToken');
-    const response = await fetch(`https://smart-hotel-api.onrender.com/api/products/${id}`, {
+    const response = await fetch(`${apiUrl}/api/products/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -27,6 +29,8 @@ const fetchDrinkById = async (id) => {
 };
 
 const ShippingResume = () => {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   const navigation = useNavigation();
   const [cartItems, setCartItems] = useState([]);
   const [userName, setUserName] = useState('');
@@ -55,7 +59,7 @@ const ShippingResume = () => {
       if (userId) {
         const userToken = await AsyncStorage.getItem('userToken');
         console.log(userToken);
-        const response = await fetch(`https://smart-hotel-api.onrender.com/api/customers/${userId}`, {
+        const response = await fetch(`${apiUrl}/api/customers/${userId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',

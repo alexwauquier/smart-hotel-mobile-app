@@ -9,6 +9,8 @@ import './i18n';
 import { useTranslation } from 'react-i18next'
 
 const LoginForm = () => {  
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [lastName, setLastName] = useState('');
@@ -51,7 +53,7 @@ const LoginForm = () => {
 
       console.log('📤 Données envoyées :', userData);
 
-      const response = await fetch(`https://smart-hotel-api.onrender.com/api/auth/login/customer`, {
+      const response = await fetch(`${apiUrl}/api/auth/login/customer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

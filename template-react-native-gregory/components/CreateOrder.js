@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 const CreateOrder = () => {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -43,7 +45,7 @@ const CreateOrder = () => {
 
         console.log('Données envoyées à l’API:', orderData);
 
-        const response = await fetch('https://smart-hotel-api.onrender.com/api/orders', {
+        const response = await fetch(`${apiUrl}/api/orders`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

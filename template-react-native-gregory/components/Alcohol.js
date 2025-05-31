@@ -7,6 +7,8 @@ import './i18n';
 import { useTranslation } from 'react-i18next'
 
 const AlcoholDrinks = () => {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [alcoholDrinks, setAlcoholDrinks] = useState([]);
   const [selectedDrink, setSelectedDrink] = useState(null);
@@ -36,7 +38,7 @@ const AlcoholDrinks = () => {
     const fetchDrinks = async () => {
       const userToken = await AsyncStorage.getItem('userToken');
     
-      fetch(`https://smart-hotel-api.onrender.com/api/products`, {
+      fetch(`${apiUrl}/api/products`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
