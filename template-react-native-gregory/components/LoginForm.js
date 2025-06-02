@@ -150,9 +150,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    position: 'relative',
   },
   picker: {
-    height: 40,
+    height: 'fitcontent',
+    maxHeight: 80,
     width: 200,
     marginBottom: 50,
   },

@@ -1,5 +1,8 @@
 {
   "expo": {
+    "androidNavigationBar":{
+      "visible": "sticky-immersive"
+    },
     "name": "front",
     "slug": "front",
     "version": "1.0.0",

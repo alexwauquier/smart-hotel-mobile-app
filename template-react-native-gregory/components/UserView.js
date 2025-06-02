@@ -210,7 +210,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   picker: {
-    height: 40,
+    height: 'fitcontent',
+    maxHeight: 80,
     width: 200,
     marginBottom: 50,
   },
